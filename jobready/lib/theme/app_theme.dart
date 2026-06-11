@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Brand colors
@@ -42,14 +43,16 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
         ),
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.w800, fontSize: 28),
-        headlineMedium: TextStyle(color: textPrimary, fontWeight: FontWeight.w700, fontSize: 22),
-        titleLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 18),
-        titleMedium: TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 16),
-        bodyLarge: TextStyle(color: textPrimary, fontSize: 15),
-        bodyMedium: TextStyle(color: textSecondary, fontSize: 14),
-        labelLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+      textTheme: GoogleFonts.outfitTextTheme(
+        const TextTheme(
+          headlineLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.w800, fontSize: 28),
+          headlineMedium: TextStyle(color: textPrimary, fontWeight: FontWeight.w700, fontSize: 22),
+          titleLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 18),
+          titleMedium: TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 16),
+          bodyLarge: TextStyle(color: textPrimary, fontSize: 15),
+          bodyMedium: TextStyle(color: textSecondary, fontSize: 14),
+          labelLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+        ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: bgCard,
