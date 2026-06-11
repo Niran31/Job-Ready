@@ -9,7 +9,7 @@ import '../controllers/habit_controller.dart';
 class SyncService extends GetxService {
   static SyncService get to => Get.find();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth? _auth;
   FirebaseFirestore? _firestore;
 
   final Rxn<User> currentUser = Rxn<User>();
@@ -24,10 +24,11 @@ class SyncService extends GetxService {
 
   void _checkFirebaseAvailability() {
     try {
+      _auth = FirebaseAuth.instance;
       _firestore = FirebaseFirestore.instance;
       isFirebaseAvailable.value = true;
-      currentUser.value = _auth.currentUser;
-      _auth.authStateChanges().listen((user) {
+      currentUser.value = _auth!.currentUser;
+      _auth!.authStateChanges().listen((user) {
         currentUser.value = user;
         if (user != null) {
           syncAll(user.uid);
@@ -43,20 +44,20 @@ class SyncService extends GetxService {
 
   // Sign up
   Future<UserCredential?> signUp(String email, String password) async {
-    if (!isFirebaseAvailable.value) return null;
-    return await _auth.createUserWithEmailAndPassword(email: email, password: password);
+    if (!isFirebaseAvailable.value || _auth == null) return null;
+    return await _auth!.createUserWithEmailAndPassword(email: email, password: password);
   }
 
   // Login
   Future<UserCredential?> login(String email, String password) async {
-    if (!isFirebaseAvailable.value) return null;
-    return await _auth.signInWithEmailAndPassword(email: email, password: password);
+    if (!isFirebaseAvailable.value || _auth == null) return null;
+    return await _auth!.signInWithEmailAndPassword(email: email, password: password);
   }
 
   // Logout
   Future<void> logout() async {
-    if (!isFirebaseAvailable.value) return;
-    await _auth.signOut();
+    if (!isFirebaseAvailable.value || _auth == null) return;
+    await _auth!.signOut();
   }
 
   // Synchronize everything
