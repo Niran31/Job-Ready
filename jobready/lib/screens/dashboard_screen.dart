@@ -6,6 +6,7 @@ import '../widgets/stat_card.dart';
 import '../widgets/habit_tile.dart';
 import '../widgets/section_header.dart';
 import '../widgets/weekly_review_dialog.dart';
+import '../services/sync_service.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -17,8 +18,21 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
       body: SafeArea(
-        child: Obx(() => CustomScrollView(
-          slivers: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await ctrl.checkGitHubCommits();
+            if (Get.isRegistered<SyncService>()) {
+              final syncService = SyncService.to;
+              if (syncService.isLoggedIn) {
+                await syncService.syncAll(syncService.currentUser.value!.uid);
+              }
+            }
+          },
+          backgroundColor: AppTheme.bgCard,
+          color: AppTheme.primary,
+          child: Obx(() => CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
             // ── Top bar with name and greeting ───────────────────────────
             SliverToBoxAdapter(
               child: Padding(
@@ -177,7 +191,7 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
           ],
-        )),
+        ))),
       ),
     );
   }

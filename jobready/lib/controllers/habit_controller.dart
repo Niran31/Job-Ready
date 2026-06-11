@@ -2,6 +2,9 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/habit_model.dart';
+import '../services/github_service.dart';
+import '../services/notification_service.dart';
+import '../services/sync_service.dart';
 
 class HabitController extends GetxController {
   late Box<HabitModel> _habitBox;
@@ -19,6 +22,11 @@ class HabitController extends GetxController {
   final RxDouble targetHours = 15.0.obs;
   final RxInt targetCoding = 5.obs;
   final RxInt targetDsa = 3.obs;
+
+  // GitHub Auto-Tracker
+  final RxString githubUsername = ''.obs;
+  final RxBool enableGithubTracking = false.obs;
+  final RxBool isGithubSyncing = false.obs;
 
   // Days since June 22
   final int unemployedDay = _calcDaysSinceJune22();
@@ -44,6 +52,7 @@ class HabitController extends GetxController {
     _reviewBox = Hive.box<WeeklyReviewModel>('weekly_reviews');
     _loadData();
     _seedDefaultHabitsIfEmpty();
+    checkGitHubCommits();
   }
 
   Future<void> _loadTargets() async {
@@ -52,6 +61,55 @@ class HabitController extends GetxController {
     targetHours.value = prefs.getDouble('targetHours') ?? 15.0;
     targetCoding.value = prefs.getInt('targetCoding') ?? 5;
     targetDsa.value = prefs.getInt('targetDsa') ?? 3;
+    githubUsername.value = prefs.getString('githubUsername') ?? '';
+    enableGithubTracking.value = prefs.getBool('enableGithubTracking') ?? false;
+  }
+
+  Future<void> updateGitHubSettings(String username, bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    githubUsername.value = username;
+    enableGithubTracking.value = enabled;
+    await prefs.setString('githubUsername', username);
+    await prefs.setBool('enableGithubTracking', enabled);
+
+    if (enabled && username.isNotEmpty) {
+      checkGitHubCommits();
+    }
+  }
+
+  Future<void> checkGitHubCommits() async {
+    if (githubUsername.value.isEmpty || !enableGithubTracking.value) return;
+
+    isGithubSyncing.value = true;
+    try {
+      final committed = await GitHubService.hasCommittedToday(githubUsername.value);
+      if (committed) {
+        final codingHabit = habits.firstWhereOrNull((h) {
+          final name = h.name.toLowerCase();
+          return name.contains('code') || name.contains('build');
+        });
+
+        if (codingHabit != null) {
+          final today = _todayKey();
+          if (!codingHabit.completedDates.contains(today)) {
+            codingHabit.completedDates.add(today);
+            codingHabit.save();
+            habits.refresh();
+            await NotificationService.showMotivation(
+                'GitHub activity detected! Coding habit checked off auto-magically 💻🔥');
+            
+            _syncSingle('habits', codingHabit.name, {
+              'name': codingHabit.name,
+              'emoji': codingHabit.emoji,
+              'category': codingHabit.category,
+              'completedDates': codingHabit.completedDates,
+            });
+          }
+        }
+      }
+    } finally {
+      isGithubSyncing.value = false;
+    }
   }
 
   Future<void> updateTargets({int? jobsVal, double? hoursVal, int? codingVal, int? dsaVal}) async {
@@ -81,6 +139,10 @@ class HabitController extends GetxController {
     weeklyReviews.value = _reviewBox.values.toList();
   }
 
+  void loadDataFromBoxes() {
+    _loadData();
+  }
+
   void _seedDefaultHabitsIfEmpty() {
     if (_habitBox.isEmpty) {
       final defaults = [
@@ -100,17 +162,31 @@ class HabitController extends GetxController {
   void toggleHabit(HabitModel habit) {
     habit.toggleToday();
     habits.refresh();
+    _syncSingle('habits', habit.name, {
+      'name': habit.name,
+      'emoji': habit.emoji,
+      'category': habit.category,
+      'completedDates': habit.completedDates,
+    });
   }
 
   void addHabit(String name, String emoji, String category) {
     final h = HabitModel(name: name, emoji: emoji, category: category);
     _habitBox.add(h);
     habits.value = _habitBox.values.toList();
+    _syncSingle('habits', name, {
+      'name': name,
+      'emoji': emoji,
+      'category': category,
+      'completedDates': [],
+    });
   }
 
   void deleteHabit(HabitModel habit) {
+    final name = habit.name;
     habit.delete();
     habits.value = _habitBox.values.toList();
+    _deleteSingle('habits', name);
   }
 
   // ── Jobs ──────────────────────────────────────────────────────────────────
@@ -127,30 +203,55 @@ class HabitController extends GetxController {
     );
     _jobBox.add(j);
     jobs.value = _jobBox.values.toList();
+    _syncSingle('jobs', '${company}_${role}_${today}', {
+      'company': company,
+      'role': role,
+      'status': 'applied',
+      'appliedDate': today,
+      'jobUrl': url,
+      'notes': notes,
+    });
   }
 
   void updateJobStatus(JobModel job, String status) {
     job.status = status;
     job.save();
     jobs.refresh();
+    _syncSingle('jobs', '${job.company}_${job.role}_${job.appliedDate}', {
+      'company': job.company,
+      'role': job.role,
+      'status': status,
+      'appliedDate': job.appliedDate,
+      'jobUrl': job.jobUrl,
+      'notes': job.notes,
+    });
   }
 
   void deleteJob(JobModel job) {
+    final docId = '${job.company}_${job.role}_${job.appliedDate}';
     job.delete();
     jobs.value = _jobBox.values.toList();
+    _deleteSingle('jobs', docId);
   }
 
   // ── Skills ────────────────────────────────────────────────────────────────
 
   void logSkill(String skill, double hours, {String? notes}) {
+    final today = _todayKey();
     final log = SkillLogModel(
       skill: skill,
       hoursStudied: hours,
-      date: _todayKey(),
+      date: today,
       notes: notes,
     );
     _skillBox.add(log);
     skillLogs.value = _skillBox.values.toList();
+    _syncSingle('skills', '${skill}_${today}_${hours}', {
+      'skill': skill,
+      'hoursStudied': hours,
+      'date': today,
+      'notes': notes,
+    });
   }
 
   // ── Outcome Stats ─────────────────────────────────────────────────────────
@@ -535,24 +636,43 @@ class HabitController extends GetxController {
 
   void saveWeeklyReview(String reflection, String gradeVal, List<String> strengthsList, List<String> weaknessesList) {
     final key = lastSundayKey;
+    final appsCount = weeklyJobsApplied;
+    final interviewsCount = jobs.where((j) {
+      final date = DateTime.tryParse(j.appliedDate);
+      if (date == null || date.isBefore(startOfWeek())) return false;
+      return j.status == 'interview';
+    }).length;
+    final hoursCount = weeklySkillHours;
+    final habitRate = weeklyHabitCompletionRate;
+    final scoreChange = weeklyGrindScoreEarned;
+
     final review = WeeklyReviewModel(
       weekEndDate: key,
       grade: gradeVal,
-      applicationsSent: weeklyJobsApplied,
-      interviewsReceived: jobs.where((j) {
-        final date = DateTime.tryParse(j.appliedDate);
-        if (date == null || date.isBefore(startOfWeek())) return false;
-        return j.status == 'interview';
-      }).length,
-      skillHoursCompleted: weeklySkillHours,
-      habitCompletionRate: weeklyHabitCompletionRate,
-      grindScoreChange: weeklyGrindScoreEarned,
+      applicationsSent: appsCount,
+      interviewsReceived: interviewsCount,
+      skillHoursCompleted: hoursCount,
+      habitCompletionRate: habitRate,
+      grindScoreChange: scoreChange,
       reflectionNotes: reflection,
       strengths: strengthsList,
       weaknesses: weaknessesList,
     );
     _reviewBox.put(key, review);
     weeklyReviews.value = _reviewBox.values.toList();
+
+    _syncSingle('weekly_reviews', key, {
+      'weekEndDate': key,
+      'grade': gradeVal,
+      'applicationsSent': appsCount,
+      'interviewsReceived': interviewsCount,
+      'skillHoursCompleted': hoursCount,
+      'habitCompletionRate': habitRate,
+      'grindScoreChange': scoreChange,
+      'reflectionNotes': reflection,
+      'strengths': strengthsList,
+      'weaknesses': weaknessesList,
+    });
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -561,4 +681,23 @@ class HabitController extends GetxController {
 
   String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  void _syncSingle(String collectionName, String docId, Map<String, dynamic> data) {
+    if (Get.isRegistered<SyncService>()) {
+      Get.find<SyncService>().syncSingleRecord(
+        collectionName: collectionName,
+        docId: docId,
+        data: data,
+      );
+    }
+  }
+
+  void _deleteSingle(String collectionName, String docId) {
+    if (Get.isRegistered<SyncService>()) {
+      Get.find<SyncService>().deleteSingleRecord(
+        collectionName: collectionName,
+        docId: docId,
+      );
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'models/habit_model.dart';
 import 'controllers/habit_controller.dart';
 import 'screens/dashboard_screen.dart';
@@ -9,10 +10,23 @@ import 'screens/skills_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/notification_service.dart';
+import 'services/sync_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Init Firebase (graceful fallback if config is missing)
+  bool firebaseAvailable = false;
+  try {
+    // Try initializing. On mobile, it will load GoogleServices config.
+    // If firebase_options.dart is generated later, it can be passed here.
+    await Firebase.initializeApp();
+    firebaseAvailable = true;
+    debugPrint('Firebase initialized successfully.');
+  } catch (e) {
+    debugPrint('Firebase not configured or initialization failed: $e');
+  }
 
   // Init notifications
   await NotificationService.init();
@@ -29,7 +43,8 @@ void main() async {
   await Hive.openBox<WeeklyReviewModel>('weekly_reviews');
 
   // Init GetX controller globally
-  Get.put(HabitController());
+  final controller = Get.put(HabitController());
+  Get.put(SyncService());
 
   runApp(const JobReadyApp());
 }

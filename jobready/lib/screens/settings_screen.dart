@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/habit_controller.dart';
 import '../services/notification_service.dart';
+import '../services/sync_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -173,6 +174,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 fontSize: 12,
                 height: 1.5),
           ),
+
+          const SizedBox(height: 32),
+
+          // GitHub tracking section
+          _SectionTitle(title: '💻 GitHub Commit Auto-Tracker'),
+          _GitHubSettingsCard(ctrl: Get.find<HabitController>()),
+
+          const SizedBox(height: 24),
+
+          // Firebase sync section
+          _SectionTitle(title: '☁️ Firebase Cloud Sync'),
+          const _FirebaseSettingsCard(),
 
           const SizedBox(height: 32),
 
@@ -442,3 +455,375 @@ class _TargetCounterRow extends StatelessWidget {
     );
   }
 }
+
+// ── GitHub Settings Widget ───────────────────────────────────────────────────
+
+class _GitHubSettingsCard extends StatefulWidget {
+  final HabitController ctrl;
+  const _GitHubSettingsCard({required this.ctrl});
+
+  @override
+  State<_GitHubSettingsCard> createState() => _GitHubSettingsCardState();
+}
+
+class _GitHubSettingsCardState extends State<_GitHubSettingsCard> {
+  late final TextEditingController _userCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _userCtrl = TextEditingController(text: widget.ctrl.githubUsername.value);
+  }
+
+  @override
+  void dispose() {
+    _userCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.textSecondary.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Obx(() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Auto-track GitHub commits',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Switch(
+                value: widget.ctrl.enableGithubTracking.value,
+                activeColor: AppTheme.primary,
+                onChanged: (v) {
+                  widget.ctrl.updateGitHubSettings(_userCtrl.text.trim(), v);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _userCtrl,
+            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+            decoration: const InputDecoration(
+              hintText: 'Enter GitHub username',
+              labelText: 'GitHub Username',
+              labelStyle: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+              prefixIcon: Icon(Icons.code, color: AppTheme.textSecondary, size: 20),
+            ),
+            onChanged: (v) {
+              widget.ctrl.updateGitHubSettings(v.trim(), widget.ctrl.enableGithubTracking.value);
+            },
+          ),
+          if (widget.ctrl.enableGithubTracking.value) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: widget.ctrl.isGithubSyncing.value
+                    ? null
+                    : () async {
+                        await widget.ctrl.checkGitHubCommits();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('GitHub sync completed! checked for today\'s commits 🔔'),
+                              backgroundColor: AppTheme.bgCard,
+                            ),
+                          );
+                        }
+                      },
+                icon: widget.ctrl.isGithubSyncing.value
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.sync, size: 18),
+                label: Text(widget.ctrl.isGithubSyncing.value ? 'Syncing...' : 'Sync GitHub Now'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.bgCardLight,
+                  foregroundColor: AppTheme.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ],
+      )),
+    );
+  }
+}
+
+// ── Firebase Settings Widget ─────────────────────────────────────────────────
+
+class _FirebaseSettingsCard extends StatefulWidget {
+  const _FirebaseSettingsCard();
+
+  @override
+  State<_FirebaseSettingsCard> createState() => _FirebaseSettingsCardState();
+}
+
+class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLogin = true;
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _loading = true);
+    final syncService = SyncService.to;
+
+    try {
+      if (_isLogin) {
+        await syncService.login(_emailCtrl.text.trim(), _passwordCtrl.text);
+      } else {
+        await syncService.signUp(_emailCtrl.text.trim(), _passwordCtrl.text);
+      }
+
+      _emailCtrl.clear();
+      _passwordCtrl.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isLogin ? 'Logged in successfully! 🎉' : 'Account created and synced! 🚀'),
+            backgroundColor: AppTheme.bgCard,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Auth error: ${e.toString().replaceAll(RegExp(r'\[.*?\]'), '')}'),
+            backgroundColor: AppTheme.accent.withOpacity(0.8),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!Get.isRegistered<SyncService>()) {
+      return _buildFallbackCard(reason: 'SyncService is not initialized.');
+    }
+
+    final syncService = SyncService.to;
+
+    return Obx(() {
+      if (!syncService.isFirebaseAvailable.value) {
+        return _buildFallbackCard(
+          reason: 'Firebase is running in local-offline mode. Please configure Firebase options using flutterfire CLI to sync online.',
+        );
+      }
+
+      final user = syncService.currentUser.value;
+
+      if (user != null) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.bgCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.success.withOpacity(0.3), width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.cloud_done, color: AppTheme.success, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Cloud Backup Active',
+                          style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          user.email ?? 'Authenticated',
+                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: syncService.isSyncing.value
+                          ? null
+                          : () async {
+                              await syncService.syncAll(user.uid);
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Data sync complete! ☁️'),
+                                    backgroundColor: AppTheme.bgCard,
+                                  ),
+                                );
+                              }
+                            },
+                      icon: syncService.isSyncing.value
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.sync, size: 16),
+                      label: Text(syncService.isSyncing.value ? 'Syncing...' : 'Sync Now'),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    onPressed: () => syncService.logout(),
+                    icon: const Icon(Icons.logout, size: 16),
+                    label: const Text('Log out'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.accent,
+                      side: const BorderSide(color: AppTheme.accent),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }
+
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.textSecondary.withOpacity(0.1), width: 1),
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _isLogin ? 'Sign in to Cloud Sync' : 'Create Sync Account',
+                style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _emailCtrl,
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  labelStyle: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                  prefixIcon: Icon(Icons.email, color: AppTheme.textSecondary, size: 18),
+                ),
+                validator: (val) => val == null || !val.contains('@') ? 'Enter a valid email' : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _passwordCtrl,
+                obscureText: true,
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  labelStyle: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                  prefixIcon: Icon(Icons.lock, color: AppTheme.textSecondary, size: 18),
+                ),
+                validator: (val) => val == null || val.length < 6 ? 'Password must be at least 6 characters' : null,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _submit,
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                        )
+                      : Text(_isLogin ? 'Sign In' : 'Register'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: TextButton(
+                  onPressed: () => setState(() => _isLogin = !_isLogin),
+                  child: Text(
+                    _isLogin ? 'Don\'t have an account? Register' : 'Already have an account? Sign In',
+                    style: const TextStyle(color: AppTheme.secondary, fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildFallbackCard({required String reason}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.warning.withOpacity(0.3), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.cloud_off, color: AppTheme.warning, size: 24),
+              SizedBox(width: 12),
+              Text(
+                'Cloud Sync Offline',
+                style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            reason,
+            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
