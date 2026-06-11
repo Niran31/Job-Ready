@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../controllers/habit_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
+import 'weekly_review_history_screen.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -28,6 +29,10 @@ class StatsScreen extends StatelessWidget {
           children: [
             // ── Grind Score Card & Breakdown ──────────────────────────────
             _GrindScoreDetailsCard(ctrl: ctrl),
+            const SizedBox(height: 16),
+
+            // ── Weekly Review History Nav Card ────────────────────────────
+            const _WeeklyReviewHistoryNavCard(),
             const SizedBox(height: 24),
 
             // ── Interview Conversion ──────────────────────────────────────
@@ -820,4 +825,69 @@ class _JobFunnelWidget extends StatelessWidget {
     );
   }
 }
+
+// ── Weekly Review History Navigation Card ─────────────────────────────────────
+
+class _WeeklyReviewHistoryNavCard extends StatelessWidget {
+  const _WeeklyReviewHistoryNavCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.bgCardLight, width: 1.5),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Get.to(() => const WeeklyReviewHistoryScreen()),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.history_edu, color: AppTheme.primary, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Weekly Reviews History',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'Browse your past reflections & weekly grades',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
