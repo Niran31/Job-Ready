@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/habit_controller.dart';
 import '../theme/app_theme.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/gradient_button.dart';
 
 class WeeklyReviewDialog extends StatefulWidget {
   const WeeklyReviewDialog({super.key});
@@ -61,7 +63,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
 
   List<String> _getStrengths() {
     final list = <String>[];
-    if (apps >= targetApps) list.add('Met or exceeded job application target (+${apps})');
+    if (apps >= targetApps) list.add('Met or exceeded job application target (+$apps)');
     if (hours >= targetHours) list.add('Exceeded weekly study target (${hours.toStringAsFixed(1)}h)');
     if (habitRate >= 0.8) list.add('Excellent habit consistency (${(habitRate * 100).toStringAsFixed(0)}%)');
     if (apps > 5 && hours > 10) list.add('Balanced routine between job hunt and study');
@@ -71,7 +73,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
 
   List<String> _getWeaknesses() {
     final list = <String>[];
-    if (apps < targetApps * 0.6) list.add('Job applications are low (${apps}/${targetApps})');
+    if (apps < targetApps * 0.6) list.add('Job applications are low ($apps/$targetApps)');
     if (hours < targetHours * 0.6) list.add('Study time is below target (${hours.toStringAsFixed(1)}/${targetHours}h)');
     if (habitRate < 0.5) list.add('Habit completion rate is low (${(habitRate * 100).toStringAsFixed(0)}%)');
     if (apps == 0) list.add('Zero job applications sent. Need to apply daily!');
@@ -101,19 +103,16 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
   @override
   Widget build(BuildContext context) {
     final gradeColor = _getGradeColor(grade);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dialog(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppTheme.primary.withOpacity(0.2), width: 1.5),
-        ),
+      child: GlassCard(
+        padding: const EdgeInsets.all(24),
+        borderColor: AppTheme.primary.withOpacity(0.2),
+        isImportant: true,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,16 +121,12 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Weekly Career Review',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: AppTheme.textSecondary),
+                    icon: Icon(Icons.close, color: AppTheme.textSecondary(context)),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -141,24 +136,24 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
               // Grade Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      gradeColor.withOpacity(0.25),
-                      AppTheme.bgCard,
+                      gradeColor.withOpacity(0.15),
+                      isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight,
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: gradeColor.withOpacity(0.3), width: 1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: gradeColor.withOpacity(0.3), width: 1.5),
                 ),
                 child: Row(
                   children: [
                     Container(
-                      width: 60,
-                      height: 60,
+                      width: 64,
+                      height: 64,
                       decoration: BoxDecoration(
-                        color: gradeColor.withOpacity(0.2),
+                        color: gradeColor.withOpacity(0.15),
                         shape: BoxShape.circle,
                         border: Border.all(color: gradeColor, width: 2),
                       ),
@@ -173,24 +168,24 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 20),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Weekly Grade: ${_getGradeLabel(grade)}',
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                            style: TextStyle(
+                              color: AppTheme.textPrimary(context),
                               fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
                             'Grind score earned: +$grindScoreChange pts',
-                            style: const TextStyle(
-                              color: AppTheme.textSecondary,
+                            style: TextStyle(
+                              color: AppTheme.textSecondary(context),
                               fontSize: 13,
                             ),
                           ),
@@ -200,18 +195,14 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Progress Review Rows
-              const Text(
+              Text(
                 'Weekly Performance vs Targets',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               _ReviewStatRow(
                 label: '📨 Job applications',
                 value: '$apps / $targetApps',
@@ -237,7 +228,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
                 value: '${(habitRate * 100).toStringAsFixed(0)}%',
                 isMet: habitRate >= 0.75,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Strengths & Weaknesses
               const Text(
@@ -245,96 +236,86 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
                 style: TextStyle(
                   color: AppTheme.success,
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               ...strengths.map((s) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.arrow_upward, color: AppTheme.success, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(s, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13))),
+                    const Icon(Icons.arrow_upward_rounded, color: AppTheme.success, size: 18),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(s, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13))),
                   ],
                 ),
               )),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               const Text(
                 'Areas to Focus / Weaknesses',
                 style: TextStyle(
                   color: AppTheme.accent,
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 6),
-              ...weaknesses.map((w) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.arrow_downward, color: AppTheme.accent, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(w, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13))),
-                  ],
-                ),
-              )),
-              const SizedBox(height: 20),
-
-              // Personal Reflection
-              const Text(
-                'Personal Reflection Notes',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 8),
+              ...weaknesses.map((w) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.arrow_downward_rounded, color: AppTheme.accent, size: 18),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(w, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13))),
+                  ],
+                ),
+              )),
+              const SizedBox(height: 24),
+
+              // Personal Reflection
+              Text(
+                'Personal Reflection Notes',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: _reflectionCtrl,
                 maxLines: 3,
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Write down what went well, what blocked you, and your plan for next week...',
-                  fillColor: AppTheme.bgCard,
+                  fillColor: isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight,
                   filled: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.15)),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               // Submit Button
-              SizedBox(
+              GradientButton(
+                text: 'Submit Weekly Review',
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _ctrl.saveWeeklyReview(
-                      _reflectionCtrl.text.trim(),
-                      grade,
-                      strengths,
-                      weaknesses,
-                    );
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Weekly review for Sunday logged successfully! Grade: $grade 🎉'),
-                        backgroundColor: AppTheme.bgCard,
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Submit Weekly Review'),
-                ),
+                onPressed: () {
+                  _ctrl.saveWeeklyReview(
+                    _reflectionCtrl.text.trim(),
+                    grade,
+                    strengths,
+                    weaknesses,
+                  );
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Weekly review for Sunday logged successfully! Grade: $grade 🎉'),
+                      backgroundColor: AppTheme.cardColor(context),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -358,26 +339,26 @@ class _ReviewStatRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+          Text(label, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13, fontWeight: FontWeight.w500)),
           Row(
             children: [
               Text(
                 value,
                 style: TextStyle(
-                  color: isMet ? AppTheme.success : AppTheme.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  color: isMet ? AppTheme.success : AppTheme.textPrimary(context),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Icon(
-                isMet ? Icons.check_circle : Icons.pending,
-                color: isMet ? AppTheme.success : AppTheme.textSecondary.withOpacity(0.5),
-                size: 16,
+                isMet ? Icons.check_circle_rounded : Icons.pending_rounded,
+                color: isMet ? AppTheme.success : AppTheme.textSecondary(context).withOpacity(0.5),
+                size: 18,
               ),
             ],
           ),

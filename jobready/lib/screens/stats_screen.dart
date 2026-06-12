@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../controllers/habit_controller.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_gradients.dart';
 import '../widgets/section_header.dart';
+import '../widgets/glass_card.dart';
 import 'weekly_review_history_screen.dart';
 
 class StatsScreen extends StatelessWidget {
@@ -15,65 +16,63 @@ class StatsScreen extends StatelessWidget {
     final ctrl = Get.find<HabitController>();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
         title: const Text('Career Stats & Trends'),
-        elevation: 0,
       ),
       body: Obx(() {
         // Trigger Obx observation
         final _ = [ctrl.habits.length, ctrl.jobs.length, ctrl.skillLogs.length];
 
         return ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           children: [
             // ── Grind Score Card & Breakdown ──────────────────────────────
             _GrindScoreDetailsCard(ctrl: ctrl),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // ── Weekly Review History Nav Card ────────────────────────────
             const _WeeklyReviewHistoryNavCard(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // ── Interview Conversion ──────────────────────────────────────
             _InterviewConversionCard(ctrl: ctrl),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // ── Future Projections ────────────────────────────────────────
             _FutureProjectionWidget(ctrl: ctrl),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // ── Grind Score 7-Day History Chart ───────────────────────────
             _ChartSectionCard(
               title: 'Grind Score Progression (7 Days)',
               chart: _GrindScoreLineChart(ctrl: ctrl),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // ── Applications 4-Week Bar Chart ─────────────────────────────
             _ChartSectionCard(
               title: 'Applications Per Week',
               chart: _AppsPerWeekBarChart(ctrl: ctrl),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // ── Skill Hours 7-Day Line Chart ──────────────────────────────
             _ChartSectionCard(
               title: 'Skill Study Hours Trend (7 Days)',
               chart: _SkillHoursLineChart(ctrl: ctrl),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // ── Habit Completion 7-Day Trend Chart ────────────────────────
             _ChartSectionCard(
               title: 'Habit Completion Consistency (7 Days)',
               chart: _HabitsCompletionLineChart(ctrl: ctrl),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // ── Job Funnel ────────────────────────────────────────────────
             SectionHeader(title: 'Job pipeline funnel'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             _JobFunnelWidget(ctrl: ctrl),
 
             const SizedBox(height: 100),
@@ -122,6 +121,7 @@ class _GrindScoreDetailsCardState extends State<_GrindScoreDetailsCard> {
     final nextS = _nextMilestoneScore;
     final nextR = _nextMilestoneRank;
     final pct = (s / nextS).clamp(0.0, 1.0);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Calculate score details breakdown
     int appPts = 0;
@@ -165,52 +165,47 @@ class _GrindScoreDetailsCardState extends State<_GrindScoreDetailsCard> {
       }
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.primary.withOpacity(0.35), AppTheme.secondary.withOpacity(0.15)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 1.5),
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      gradient: AppGradients.welcomeCard(context),
+      borderColor: AppTheme.primary.withOpacity(0.3),
+      isImportant: true,
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: Row(
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Total Grind Score',
-                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Text(
                         '$s pts',
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 36,
+                        style: TextStyle(
+                          color: AppTheme.textPrimary(context),
+                          fontSize: 40,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.12),
+                          color: AppTheme.primary.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           rank,
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
@@ -227,25 +222,25 @@ class _GrindScoreDetailsCardState extends State<_GrindScoreDetailsCard> {
 
           // Milestone Progress
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Next Milestone: $nextR', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
-                    Text('$s / $nextS pts', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                    Text('Next Milestone: $nextR', style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13)),
+                    Text('$s / $nextS pts', style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13, fontWeight: FontWeight.bold)),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(6),
                   child: LinearProgressIndicator(
                     value: pct,
-                    minHeight: 5,
-                    backgroundColor: AppTheme.bgDark.withOpacity(0.4),
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.secondary),
+                    minHeight: 8,
+                    backgroundColor: isDark ? AppTheme.dividerDark : AppTheme.dividerLight,
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accent),
                   ),
                 ),
               ],
@@ -253,10 +248,13 @@ class _GrindScoreDetailsCardState extends State<_GrindScoreDetailsCard> {
           ),
 
           if (_expanded) ...[
-            const Divider(color: AppTheme.bgDark, height: 1),
+            Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
             Container(
-              padding: const EdgeInsets.all(16),
-              color: AppTheme.bgCard.withOpacity(0.5),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.cardDarkAlt.withOpacity(0.5) : AppTheme.surfaceLight.withOpacity(0.5),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+              ),
               child: Column(
                 children: [
                   _BreakdownLine(label: '📨 Job applications (+5)', value: appPts),
@@ -286,12 +284,12 @@ class GestureButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: AppTheme.textSecondary(context).withOpacity(0.1),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: AppTheme.textPrimary, size: 20),
+        child: Icon(icon, color: AppTheme.textPrimary(context), size: 24),
       ),
     );
   }
@@ -305,16 +303,69 @@ class _BreakdownLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+          Text(label, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13, fontWeight: FontWeight.w500)),
           Text(
             '+$value pts',
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 13, fontWeight: FontWeight.bold),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Weekly Review History Navigation Card ─────────────────────────────────────
+
+class _WeeklyReviewHistoryNavCard extends StatelessWidget {
+  const _WeeklyReviewHistoryNavCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Get.to(() => const WeeklyReviewHistoryScreen()),
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.history_edu, color: AppTheme.primary, size: 28),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Weekly Reviews History',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Browse your past reflections & weekly grades',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: AppTheme.textSecondary(context)),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -331,52 +382,49 @@ class _InterviewConversionCard extends StatelessWidget {
     final conversion = ctrl.interviewConversionRate;
     final total = ctrl.totalJobsApplied;
     final interviews = ctrl.totalInterviewsScheduled;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.bgCardLight, width: 1.5),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
+      borderColor: AppTheme.warning.withOpacity(0.25),
       child: Row(
         children: [
           SizedBox(
-            width: 70,
-            height: 70,
+            width: 80,
+            height: 80,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 CircularProgressIndicator(
                   value: total == 0 ? 0.0 : (interviews / total),
-                  strokeWidth: 8,
-                  backgroundColor: AppTheme.bgCardLight,
+                  strokeWidth: 10,
+                  backgroundColor: isDark ? AppTheme.dividerDark : AppTheme.dividerLight,
                   color: AppTheme.warning,
                 ),
                 Text(
                   '${conversion.toStringAsFixed(0)}%',
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 16,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary(context),
+                    fontSize: 18,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 24),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Interview Conversion',
-                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
                   '$interviews stage advancement from $total total job application submissions.',
-                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
@@ -404,47 +452,43 @@ class _FutureProjectionWidget extends StatelessWidget {
     if (status == 'Ahead') {
       statusColor = AppTheme.success;
     } else if (status == 'Behind') {
-      statusColor = AppTheme.accent;
+      statusColor = AppTheme.error;
     } else {
       statusColor = AppTheme.primary;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: statusColor.withOpacity(0.25), width: 1.5),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
+      borderColor: statusColor.withOpacity(0.25),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Future Month Projection',
-                style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: statusColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   status,
-                  style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: statusColor, fontSize: 13, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Text(
-            'Estimated monthly output based on your activity pace over the last 30 days:',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-          ),
           const SizedBox(height: 16),
+          Text(
+            'Estimated monthly output based on your activity pace over the last 30 days:',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 24),
           _ProjectionLine(
             icon: Icons.send_outlined,
             label: 'Job Applications / month',
@@ -485,17 +529,24 @@ class _ProjectionLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 16),
           Expanded(
-            child: Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+            child: Text(label, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 14, fontWeight: FontWeight.w500)),
           ),
           Text(
             value,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 15, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -513,27 +564,18 @@ class _ChartSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.bgCardLight, width: 1),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 32),
           SizedBox(
-            height: 150,
+            height: 180,
             child: chart,
           ),
         ],
@@ -563,16 +605,16 @@ class _GrindScoreLineChart extends StatelessWidget {
 
     return LineChart(
       LineChartData(
-        gridData: FlGridData(show: false),
+        gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
-        titlesData: _buildWeekTitles(),
+        titlesData: _buildWeekTitles(context),
         lineBarsData: [
           LineChartBarData(
             spots: spots,
             isCurved: true,
             color: AppTheme.primary,
-            barWidth: 3.5,
-            dotData: FlDotData(show: true),
+            barWidth: 4,
+            dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(
               show: true,
               color: AppTheme.primary.withOpacity(0.15),
@@ -612,13 +654,13 @@ class _AppsPerWeekBarChart extends StatelessWidget {
 
     return BarChart(
       BarChartData(
-        gridData: FlGridData(show: false),
+        gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
         maxY: maxY,
         titlesData: FlTitlesData(
-          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -626,7 +668,10 @@ class _AppsPerWeekBarChart extends StatelessWidget {
                 final idx = v.toInt();
                 if (idx < 0 || idx > 3) return const SizedBox.shrink();
                 final labels = ['W-3', 'W-2', 'W-1', 'This W'];
-                return Text(labels[idx], style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11));
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(labels[idx], style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600)),
+                );
               },
             ),
           ),
@@ -638,8 +683,8 @@ class _AppsPerWeekBarChart extends StatelessWidget {
               BarChartRodData(
                 toY: e.value.toDouble(),
                 color: AppTheme.secondary,
-                width: 22,
-                borderRadius: BorderRadius.circular(6),
+                width: 24,
+                borderRadius: BorderRadius.circular(8),
               ),
             ],
           );
@@ -671,17 +716,17 @@ class _SkillHoursLineChart extends StatelessWidget {
 
     return LineChart(
       LineChartData(
-        gridData: FlGridData(show: false),
+        gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
-        titlesData: _buildWeekTitles(),
+        titlesData: _buildWeekTitles(context),
         maxY: maxY,
         lineBarsData: [
           LineChartBarData(
             spots: spots,
             isCurved: true,
             color: AppTheme.success,
-            barWidth: 3,
-            dotData: FlDotData(show: true),
+            barWidth: 4,
+            dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(show: true, color: AppTheme.success.withOpacity(0.12)),
           ),
         ],
@@ -710,18 +755,18 @@ class _HabitsCompletionLineChart extends StatelessWidget {
 
     return LineChart(
       LineChartData(
-        gridData: FlGridData(show: false),
+        gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
-        titlesData: _buildWeekTitles(isPercentage: true),
+        titlesData: _buildWeekTitles(context, isPercentage: true),
         maxY: 110,
         lineBarsData: [
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: AppTheme.secondary,
-            barWidth: 3,
-            dotData: FlDotData(show: true),
-            belowBarData: BarAreaData(show: true, color: AppTheme.secondary.withOpacity(0.12)),
+            color: AppTheme.accent,
+            barWidth: 4,
+            dotData: const FlDotData(show: true),
+            belowBarData: BarAreaData(show: true, color: AppTheme.accent.withOpacity(0.12)),
           ),
         ],
       ),
@@ -731,22 +776,22 @@ class _HabitsCompletionLineChart extends StatelessWidget {
 
 // ── Chart Helper ─────────────────────────────────────────────────────────────
 
-FlTitlesData _buildWeekTitles({bool isPercentage = false}) {
+FlTitlesData _buildWeekTitles(BuildContext context, {bool isPercentage = false}) {
   return FlTitlesData(
     leftTitles: AxisTitles(
       sideTitles: SideTitles(
         showTitles: isPercentage,
-        reservedSize: 32,
+        reservedSize: 36,
         getTitlesWidget: (v, _) {
           if (v == 0 || v == 50 || v == 100) {
-            return Text('${v.toInt()}%', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10));
+            return Text('${v.toInt()}%', style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 11, fontWeight: FontWeight.w600));
           }
           return const SizedBox.shrink();
         },
       ),
     ),
-    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
     bottomTitles: AxisTitles(
       sideTitles: SideTitles(
         showTitles: true,
@@ -760,7 +805,10 @@ FlTitlesData _buildWeekTitles({bool isPercentage = false}) {
           final day = now.subtract(Duration(days: 6 - index));
           final label = days[day.weekday - 1];
 
-          return Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10));
+          return Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(label, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 11, fontWeight: FontWeight.w600)),
+          );
         },
       ),
     ),
@@ -779,41 +827,38 @@ class _JobFunnelWidget extends StatelessWidget {
       ('Applied 📨', 'applied', AppTheme.primary),
       ('Interviews 🎯', 'interview', AppTheme.warning),
       ('Offers 🎉', 'offer', AppTheme.success),
-      ('Rejected ❌', 'rejected', AppTheme.accent),
-      ('Ghosted 👻', 'ghosted', AppTheme.textSecondary),
+      ('Rejected ❌', 'rejected', AppTheme.error),
+      ('Ghosted 👻', 'ghosted', AppTheme.textMuted),
     ];
     final total = ctrl.jobs.length;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
       child: Column(
         children: stages.map((s) {
           final count = ctrl.jobs.where((j) => j.status == s.$2).length;
           final pct = total == 0 ? 0.0 : count / total;
 
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(s.$1, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w500)),
-                    Text('$count ($total total)', style: TextStyle(color: s.$3, fontSize: 13, fontWeight: FontWeight.bold)),
+                    Text(s.$1, style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 14, fontWeight: FontWeight.w600)),
+                    Text('$count ($total total)', style: TextStyle(color: s.$3, fontSize: 14, fontWeight: FontWeight.bold)),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(6),
                   child: LinearProgressIndicator(
                     value: pct,
-                    minHeight: 6,
-                    backgroundColor: AppTheme.bgCardLight,
+                    minHeight: 8,
+                    backgroundColor: isDark ? AppTheme.dividerDark : AppTheme.dividerLight,
                     valueColor: AlwaysStoppedAnimation<Color>(s.$3),
                   ),
                 ),
@@ -825,69 +870,3 @@ class _JobFunnelWidget extends StatelessWidget {
     );
   }
 }
-
-// ── Weekly Review History Navigation Card ─────────────────────────────────────
-
-class _WeeklyReviewHistoryNavCard extends StatelessWidget {
-  const _WeeklyReviewHistoryNavCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.bgCardLight, width: 1.5),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Get.to(() => const WeeklyReviewHistoryScreen()),
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.history_edu, color: AppTheme.primary, size: 24),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Weekly Reviews History',
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'Browse your past reflections & weekly grades',
-                        style: TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-

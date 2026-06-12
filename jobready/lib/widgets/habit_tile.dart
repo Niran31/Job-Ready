@@ -18,6 +18,7 @@ class HabitTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final done = habit.isCompletedToday();
     final streak = habit.currentStreak;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dismissible(
       key: Key(habit.key.toString()),
@@ -26,32 +27,42 @@ class HabitTile extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: AppTheme.accent.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(14),
+          color: AppTheme.error.withOpacity(isDark ? 0.2 : 0.08),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: const Icon(Icons.delete_outline, color: AppTheme.accent),
+        child: Icon(Icons.delete_outline, color: AppTheme.error),
       ),
       onDismissed: (_) => onDelete(),
       child: GestureDetector(
         onTap: onToggle,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: done
-                ? AppTheme.secondary.withOpacity(0.12)
-                : AppTheme.bgCard,
-            borderRadius: BorderRadius.circular(14),
+                ? AppTheme.primary.withOpacity(isDark ? 0.12 : 0.06)
+                : AppTheme.cardColor(context),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: done
-                  ? AppTheme.secondary.withOpacity(0.4)
-                  : AppTheme.textSecondary.withOpacity(0.12),
+                  ? AppTheme.primary.withOpacity(0.3)
+                  : AppTheme.dividerColor(context),
               width: 1,
             ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
-              Text(habit.emoji, style: const TextStyle(fontSize: 22)),
+              Text(habit.emoji, style: const TextStyle(fontSize: 24)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -61,23 +72,23 @@ class HabitTile extends StatelessWidget {
                       habit.name,
                       style: TextStyle(
                         color: done
-                            ? AppTheme.textSecondary
-                            : AppTheme.textPrimary,
+                            ? AppTheme.textSecondary(context)
+                            : AppTheme.textPrimary(context),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        decoration:
-                            done ? TextDecoration.lineThrough : null,
+                        decoration: done ? TextDecoration.lineThrough : null,
+                        decorationColor: AppTheme.textSecondary(context),
                       ),
                     ),
                     if (streak > 1)
                       Padding(
-                        padding: const EdgeInsets.only(top: 2),
+                        padding: const EdgeInsets.only(top: 3),
                         child: Text(
                           '🔥 $streak day streak',
-                          style: const TextStyle(
-                            color: AppTheme.warning,
+                          style: TextStyle(
+                            color: AppTheme.accent,
                             fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -85,24 +96,22 @@ class HabitTile extends StatelessWidget {
                 ),
               ),
               AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 26,
-                height: 26,
+                duration: const Duration(milliseconds: 250),
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
-                  color: done
-                      ? AppTheme.secondary
-                      : Colors.transparent,
+                  gradient: done ? AppGradientCheckbox.gradient : null,
+                  color: done ? null : Colors.transparent,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: done
-                        ? AppTheme.secondary
-                        : AppTheme.textSecondary.withOpacity(0.3),
+                        ? Colors.transparent
+                        : AppTheme.textSecondary(context).withOpacity(0.3),
                     width: 2,
                   ),
                 ),
                 child: done
-                    ? const Icon(Icons.check,
-                        color: Colors.white, size: 16)
+                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
                     : null,
               ),
             ],
@@ -111,4 +120,12 @@ class HabitTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class AppGradientCheckbox {
+  static const LinearGradient gradient = LinearGradient(
+    colors: [AppTheme.primary, AppTheme.secondary],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }

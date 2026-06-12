@@ -4,6 +4,8 @@ import '../controllers/habit_controller.dart';
 import '../models/habit_model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/gradient_button.dart';
 
 class JobsScreen extends StatelessWidget {
   const JobsScreen({super.key});
@@ -20,8 +22,8 @@ class JobsScreen extends StatelessWidget {
     'applied': AppTheme.primary,
     'interview': AppTheme.warning,
     'offer': AppTheme.success,
-    'rejected': AppTheme.accent,
-    'ghosted': AppTheme.textSecondary,
+    'rejected': AppTheme.error,
+    'ghosted': AppTheme.textMuted, // updated to use theme constant equivalent
   };
 
   @override
@@ -29,7 +31,6 @@ class JobsScreen extends StatelessWidget {
     final ctrl = Get.find<HabitController>();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
         title: const Text('Job tracker'),
         actions: [
@@ -42,38 +43,51 @@ class JobsScreen extends StatelessWidget {
       body: Obx(() {
         if (ctrl.jobs.isEmpty) {
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.work_outline,
-                    color: AppTheme.textSecondary, size: 48),
-                const SizedBox(height: 12),
-                Text('No applications yet bro',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                Text('Tap + to add your first one',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () => _showAddJobSheet(context, ctrl),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add application'),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: GlassCard(
+                padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.work_outline, color: AppTheme.primary, size: 48),
+                    ),
+                    const SizedBox(height: 24),
+                    Text('No applications yet bro',
+                        style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 8),
+                    Text('Tap + to add your first one',
+                        style: Theme.of(context).textTheme.bodyMedium),
+                    const SizedBox(height: 32),
+                    GradientButton(
+                      text: 'Add application',
+                      icon: Icons.add,
+                      onPressed: () => _showAddJobSheet(context, ctrl),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         }
 
         return ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           children: [
             // Stats row
             Row(
               children: [
                 _StatPill(label: 'Total', value: '${ctrl.jobs.length}', color: AppTheme.primary),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 _StatPill(label: 'Active', value: '${ctrl.activeApplications}', color: AppTheme.secondary),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 _StatPill(
                   label: 'Offers',
                   value: '${ctrl.jobs.where((j) => j.status == 'offer').length}',
@@ -81,7 +95,7 @@ class JobsScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // Group by status
             ..._statuses.map((status) {
@@ -91,7 +105,7 @@ class JobsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SectionHeader(title: _statusLabels[status]!),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   ...group.map((job) => _JobCard(
                         job: job,
                         ctrl: ctrl,
@@ -99,7 +113,7 @@ class JobsScreen extends StatelessWidget {
                         statusLabels: _statusLabels,
                         statuses: _statuses,
                       )),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                 ],
               );
             }),
@@ -117,56 +131,54 @@ class JobsScreen extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.bgCard,
+      backgroundColor: AppTheme.cardColor(context),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (ctx) => Padding(
         padding: EdgeInsets.fromLTRB(
-            20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+            24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Add application',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
+                style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 24),
             TextField(
               controller: companyCtrl,
               autofocus: true,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: AppTheme.textPrimary(context)),
               decoration: const InputDecoration(hintText: 'Company name'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: roleCtrl,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: AppTheme.textPrimary(context)),
               decoration: const InputDecoration(hintText: 'Role / position'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: urlCtrl,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: AppTheme.textPrimary(context)),
               decoration: const InputDecoration(hintText: 'Job URL (optional)'),
             ),
-            const SizedBox(height: 20),
-            SizedBox(
+            const SizedBox(height: 32),
+            GradientButton(
+              text: 'Add application',
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (companyCtrl.text.trim().isNotEmpty &&
-                      roleCtrl.text.trim().isNotEmpty) {
-                    ctrl.addJob(
-                      companyCtrl.text.trim(),
-                      roleCtrl.text.trim(),
-                      url: urlCtrl.text.trim().isEmpty ? null : urlCtrl.text.trim(),
-                    );
-                    Navigator.pop(ctx);
-                  }
-                },
-                child: const Text('Add application'),
-              ),
+              onPressed: () {
+                if (companyCtrl.text.trim().isNotEmpty &&
+                    roleCtrl.text.trim().isNotEmpty) {
+                  ctrl.addJob(
+                    companyCtrl.text.trim(),
+                    roleCtrl.text.trim(),
+                    url: urlCtrl.text.trim().isEmpty ? null : urlCtrl.text.trim(),
+                  );
+                  Navigator.pop(ctx);
+                }
+              },
             ),
           ],
         ),
@@ -192,29 +204,53 @@ class _JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = statusColors[job.status] ?? AppTheme.textSecondary;
+    // If not found in map, fallback
+    final color = statusColors[job.status] ?? AppTheme.textSecondary(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2), width: 1),
-      ),
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      borderColor: color.withOpacity(0.3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Center(
+                  child: Text(
+                    job.company[0].toUpperCase(),
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
               Expanded(
-                child: Text(job.company,
-                    style: Theme.of(context).textTheme.titleMedium),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(job.company,
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(job.role, style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
               ),
               PopupMenuButton<String>(
-                color: AppTheme.bgCardLight,
-                icon: const Icon(Icons.more_vert,
-                    color: AppTheme.textSecondary, size: 18),
+                color: AppTheme.cardColor(context),
+                icon: Icon(Icons.more_vert,
+                    color: AppTheme.textSecondary(context), size: 20),
                 onSelected: (s) {
                   if (s == 'delete') {
                     ctrl.deleteJob(job);
@@ -226,27 +262,46 @@ class _JobCard extends StatelessWidget {
                   ...statuses.map((s) => PopupMenuItem(
                         value: s,
                         child: Text(statusLabels[s]!,
-                            style: const TextStyle(
-                                color: AppTheme.textPrimary, fontSize: 13)),
+                            style: TextStyle(
+                                color: AppTheme.textPrimary(context), fontSize: 14, fontWeight: FontWeight.w500)),
                       )),
                   const PopupMenuDivider(),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete',
                         style: TextStyle(
-                            color: AppTheme.accent, fontSize: 13)),
+                            color: AppTheme.error, fontSize: 14, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
             ],
           ),
-          Text(job.role, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 8),
-          Text(
-            'Applied: ${job.appliedDate}',
-            style: const TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 11),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Applied: ${job.appliedDate}',
+                style: TextStyle(
+                    color: AppTheme.textSecondary(context),
+                    fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  statusLabels[job.status] ?? 'Unknown',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -264,23 +319,26 @@ class _StatPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
-      ),
-      child: Row(
-        children: [
-          Text(value,
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.w700, fontSize: 16)),
-          const SizedBox(width: 6),
-          Text(label,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 12)),
-        ],
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.2), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value,
+                style: TextStyle(
+                    color: color, fontWeight: FontWeight.w800, fontSize: 20)),
+            const SizedBox(height: 2),
+            Text(label,
+                style: TextStyle(
+                    color: AppTheme.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600)),
+          ],
+        ),
       ),
     );
   }

@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/habit_controller.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_gradients.dart';
+import '../theme/app_shadows.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/habit_tile.dart';
 import '../widgets/section_header.dart';
 import '../widgets/weekly_review_dialog.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/gradient_button.dart';
 import '../services/sync_service.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -16,7 +20,6 @@ class DashboardScreen extends StatelessWidget {
     final ctrl = Get.find<HabitController>();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -28,7 +31,7 @@ class DashboardScreen extends StatelessWidget {
               }
             }
           },
-          backgroundColor: AppTheme.bgCard,
+          backgroundColor: AppTheme.cardColor(context),
           color: AppTheme.primary,
           child: Obx(() => CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -36,7 +39,7 @@ class DashboardScreen extends StatelessWidget {
             // ── Top bar with name and greeting ───────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -55,12 +58,12 @@ class DashboardScreen extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: ctrl.employmentStatus == 'Employed Mode'
                             ? AppTheme.success.withOpacity(0.15)
                             : AppTheme.primary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
                         ctrl.employmentStatus,
@@ -68,7 +71,7 @@ class DashboardScreen extends StatelessWidget {
                           color: ctrl.employmentStatus == 'Employed Mode'
                               ? AppTheme.success
                               : AppTheme.primary,
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -82,7 +85,7 @@ class DashboardScreen extends StatelessWidget {
             if (ctrl.isWeeklyReviewDue)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                   child: _WeeklyReviewBanner(ctrl: ctrl),
                 ),
               ),
@@ -90,7 +93,7 @@ class DashboardScreen extends StatelessWidget {
             // ── 1. Unemployment Counter ──────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                 child: _UnemploymentCounter(ctrl: ctrl),
               ),
             ),
@@ -98,7 +101,7 @@ class DashboardScreen extends StatelessWidget {
             // ── 2. Today's Targets ───────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                 child: _CareerTargetsWidget(ctrl: ctrl),
               ),
             ),
@@ -106,7 +109,7 @@ class DashboardScreen extends StatelessWidget {
             // ── 3. Progress Overview ─────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                 child: _ProgressOverviewGrid(ctrl: ctrl),
               ),
             ),
@@ -114,19 +117,12 @@ class DashboardScreen extends StatelessWidget {
             // ── 4. Active Applications ───────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Active Applications Preview',
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
+                    SectionHeader(title: 'Active Applications Preview'),
+                    const SizedBox(height: 12),
                     ctrl.activeApplications == 0
                         ? _EmptyState(
                             message: 'No active applications. Go apply bro!',
@@ -141,7 +137,7 @@ class DashboardScreen extends StatelessWidget {
             // ── 5. No-Zero-Day Streak ────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                 child: _NoZeroDayStreakWidget(ctrl: ctrl),
               ),
             ),
@@ -149,10 +145,10 @@ class DashboardScreen extends StatelessWidget {
             // ── 6. Habit Checklist ───────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
                 child: SectionHeader(
                   title: "Today's habits",
-                  action: "Add",
+                  action: "+ Add",
                   onAction: () => _showAddHabitSheet(context, ctrl),
                 ),
               ),
@@ -161,7 +157,7 @@ class DashboardScreen extends StatelessWidget {
             if (ctrl.habits.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: _EmptyState(
                     message: 'No habits yet. Add your first one!',
                     icon: Icons.add_task,
@@ -172,7 +168,7 @@ class DashboardScreen extends StatelessWidget {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, i) => Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
                     child: HabitTile(
                       habit: ctrl.habits[i],
                       onToggle: () => ctrl.toggleHabit(ctrl.habits[i]),
@@ -186,7 +182,7 @@ class DashboardScreen extends StatelessWidget {
             // ── 7. Skill Progress ────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 120),
                 child: _SkillProgressOverview(ctrl: ctrl),
               ),
             ),
@@ -207,58 +203,78 @@ class DashboardScreen extends StatelessWidget {
     final nameCtrl = TextEditingController();
     String selectedEmoji = '✅';
     String selectedCategory = 'general';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.bgCard,
+      backgroundColor: AppTheme.cardColor(context),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       isScrollControlled: true,
       builder: (ctx) => Padding(
         padding: EdgeInsets.fromLTRB(
-            20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+            24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Add habit',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
+                style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 20),
             TextField(
               controller: nameCtrl,
               autofocus: true,
-              style: const TextStyle(color: AppTheme.textPrimary),
-              decoration: const InputDecoration(
+              style: TextStyle(color: AppTheme.textPrimary(context)),
+              decoration: InputDecoration(
                 hintText: 'e.g. Apply for 2 jobs',
                 prefixIcon: Icon(Icons.edit_outlined,
-                    color: AppTheme.textSecondary),
+                    color: AppTheme.textSecondary(context)),
               ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              children: ['✅', '💻', '📨', '🧠', '☀️', '📵', '🏃', '📚', '🎯']
-                  .map((e) => GestureDetector(
-                        onTap: () => selectedEmoji = e,
-                        child: Text(e,
-                            style: const TextStyle(fontSize: 28)),
-                      ))
-                  .toList(),
             ),
             const SizedBox(height: 20),
-            SizedBox(
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: ['✅', '💻', '📨', '🧠', '☀️', '📵', '🏃', '📚', '🎯']
+                  .map((e) => StatefulBuilder(
+                    builder: (ctx, setState) => GestureDetector(
+                          onTap: () {
+                            selectedEmoji = e;
+                            (ctx as Element).markNeedsBuild();
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: selectedEmoji == e 
+                                  ? AppTheme.primary.withOpacity(0.15) 
+                                  : (isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: selectedEmoji == e 
+                                    ? AppTheme.primary 
+                                    : Colors.transparent,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Text(e, style: const TextStyle(fontSize: 24)),
+                          ),
+                        ),
+                  ))
+                  .toList(),
+            ),
+            const SizedBox(height: 32),
+            GradientButton(
+              text: 'Add habit',
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (nameCtrl.text.trim().isNotEmpty) {
-                    ctrl.addHabit(
-                        nameCtrl.text.trim(), selectedEmoji, selectedCategory);
-                    Navigator.pop(ctx);
-                  }
-                },
-                child: const Text('Add habit'),
-              ),
+              onPressed: () {
+                if (nameCtrl.text.trim().isNotEmpty) {
+                  ctrl.addHabit(
+                      nameCtrl.text.trim(), selectedEmoji, selectedCategory);
+                  Navigator.pop(ctx);
+                }
+              },
             ),
           ],
         ),
@@ -289,48 +305,26 @@ class _UnemploymentCounter extends StatelessWidget {
       statusTitle = 'Employed Mode';
       statusDesc = 'Offer Accepted! Let\'s go! 🎉';
       icon = Icons.emoji_events;
-      bgGradient = LinearGradient(
-        colors: [AppTheme.success.withOpacity(0.3), AppTheme.bgCard],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
+      bgGradient = AppGradients.successGlow(context);
     } else if (status == 'Internship Mode') {
       statusColor = AppTheme.secondary;
       statusTitle = 'Internship Mode';
       statusDesc = '$days days until internship ends (June 22)';
       icon = Icons.badge_outlined;
-      bgGradient = LinearGradient(
-        colors: [AppTheme.secondary.withOpacity(0.2), AppTheme.bgCard],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
+      bgGradient = AppGradients.statusGradient(AppTheme.secondary, context);
     } else {
       statusColor = AppTheme.accent;
       statusTitle = 'Job Hunt Mode';
       statusDesc = '$days days since internship ended';
       icon = Icons.explore_outlined;
-      bgGradient = LinearGradient(
-        colors: [AppTheme.accent.withOpacity(0.25), AppTheme.bgCard],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
+      bgGradient = AppGradients.statusGradient(AppTheme.accent, context);
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: bgGradient,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: statusColor.withOpacity(0.3), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: statusColor.withOpacity(0.05),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      gradient: bgGradient,
+      borderColor: statusColor.withOpacity(0.3),
+      isImportant: true,
       child: Row(
         children: [
           Container(
@@ -378,8 +372,8 @@ class _UnemploymentCounter extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   statusDesc,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary(context),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -414,35 +408,25 @@ class _CareerTargetsWidget extends StatelessWidget {
     final paceStatus = ctrl.targetPaceStatus;
     final isBehind = paceStatus == 'Behind';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isBehind ? AppTheme.accent.withOpacity(0.3) : AppTheme.primary.withOpacity(0.15),
-          width: 1,
-        ),
-      ),
+    return GlassCard(
+      borderColor: isBehind 
+          ? AppTheme.accent.withOpacity(0.3) 
+          : AppTheme.primary.withOpacity(0.15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Weekly Targets Pace',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: isBehind ? AppTheme.accent.withOpacity(0.15) : AppTheme.success.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   isBehind ? '⚠️ Behind pace' : '👍 On track',
@@ -456,20 +440,35 @@ class _CareerTargetsWidget extends StatelessWidget {
             ],
           ),
           if (isBehind) ...[
-            const SizedBox(height: 8),
-            const Text(
-              'Warning: You are falling behind this week\'s career targets. Step up the activity today!',
-              style: TextStyle(color: AppTheme.accent, fontSize: 12, fontWeight: FontWeight.w500),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.accent.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: AppTheme.accent, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Warning: You are falling behind this week\'s career targets. Step up the activity today!',
+                      style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _ProgressBarRow(
             label: '📨 Job apps',
             value: apps.toDouble(),
             target: targetApps.toDouble(),
             color: AppTheme.primary,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _ProgressBarRow(
             label: '⚡ Study hours',
             value: hours,
@@ -477,14 +476,14 @@ class _CareerTargetsWidget extends StatelessWidget {
             color: AppTheme.warning,
             isHours: true,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _ProgressBarRow(
             label: '💻 Coding sessions',
             value: coding.toDouble(),
             target: targetCoding.toDouble(),
             color: AppTheme.secondary,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _ProgressBarRow(
             label: '🧠 DSA sessions',
             value: dsa.toDouble(),
@@ -517,6 +516,7 @@ class _ProgressBarRow extends StatelessWidget {
     final pct = target == 0.0 ? 0.0 : (value / target).clamp(0.0, 1.0);
     final valueStr = isHours ? '${value.toStringAsFixed(1)}h' : '${value.toInt()}';
     final targetStr = isHours ? '${target.toStringAsFixed(0)}h' : '${target.toInt()}';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -524,20 +524,20 @@ class _ProgressBarRow extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+            Text(label, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13, fontWeight: FontWeight.w600)),
             Text(
               '$valueStr / $targetStr (${(pct * 100).toStringAsFixed(0)}%)',
-              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.bold),
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(8),
           child: LinearProgressIndicator(
             value: pct,
-            minHeight: 6,
-            backgroundColor: AppTheme.bgCardLight,
+            minHeight: 8,
+            backgroundColor: isDark ? AppTheme.dividerDark : AppTheme.dividerLight,
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
@@ -557,42 +557,35 @@ class _ProgressOverviewGrid extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Outcome Metrics',
-          style: TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        SectionHeader(title: 'Outcome Metrics'),
         const SizedBox(height: 12),
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 2,
-          childAspectRatio: 1.6,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          childAspectRatio: 1.4,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
           children: [
-            _MiniStatCard(
+            StatCard(
               label: 'Jobs applied this week',
               value: '${ctrl.weeklyJobsApplied}',
               icon: Icons.send_outlined,
               color: AppTheme.primary,
             ),
-            _MiniStatCard(
+            StatCard(
               label: 'Active applications',
               value: '${ctrl.activeApplications}',
               icon: Icons.work_outline,
               color: AppTheme.secondary,
             ),
-            _MiniStatCard(
+            StatCard(
               label: 'Interviews scheduled',
               value: '${ctrl.totalInterviewsScheduled}',
               icon: Icons.forum_outlined,
               color: AppTheme.warning,
             ),
-            _MiniStatCard(
+            StatCard(
               label: 'Study hours this week',
               value: '${ctrl.weeklySkillHours.toStringAsFixed(1)}h',
               icon: Icons.bolt_outlined,
@@ -600,33 +593,36 @@ class _ProgressOverviewGrid extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppTheme.primary.withOpacity(0.3), AppTheme.secondary.withOpacity(0.15)],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.primary.withOpacity(0.2), width: 1),
-          ),
+        const SizedBox(height: 16),
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          gradient: AppGradients.cardGlow(context),
+          borderColor: AppTheme.primary.withOpacity(0.2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.star, color: AppTheme.warning, size: 24),
-                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.warning.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.star_rounded, color: AppTheme.warning, size: 24),
+                  ),
+                  const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Grind Score',
-                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13, fontWeight: FontWeight.bold),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         ctrl.grindRank,
-                        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w800),
+                        style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 16, fontWeight: FontWeight.w800),
                       ),
                     ],
                   ),
@@ -634,72 +630,12 @@ class _ProgressOverviewGrid extends StatelessWidget {
               ),
               Text(
                 '${ctrl.grindScore} pts',
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w900),
+                style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 24, fontWeight: FontWeight.w900),
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-}
-
-class _MiniStatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _MiniStatCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.bgCardLight, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, color: color, size: 20),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
@@ -715,24 +651,17 @@ class _NoZeroDayStreakWidget extends StatelessWidget {
     final streak = ctrl.noZeroDayStreak;
     final todaySuccessful = ctrl.checkActivityForDay(DateTime.now());
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: todaySuccessful ? AppTheme.success.withOpacity(0.3) : AppTheme.textSecondary.withOpacity(0.15),
-          width: 1,
-        ),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      borderColor: todaySuccessful ? AppTheme.success.withOpacity(0.3) : AppTheme.textSecondary(context).withOpacity(0.15),
       child: Row(
         children: [
           Stack(
             alignment: Alignment.center,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   color: (todaySuccessful ? AppTheme.success : AppTheme.warning).withOpacity(0.15),
                   shape: BoxShape.circle,
@@ -740,31 +669,31 @@ class _NoZeroDayStreakWidget extends StatelessWidget {
               ),
               Text(
                 todaySuccessful ? '✅' : '🔥',
-                style: const TextStyle(fontSize: 24),
+                style: const TextStyle(fontSize: 28),
               ),
             ],
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'No-Zero-Day Streak: $streak days',
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 15,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary(context),
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   todaySuccessful
                       ? 'Today is successful! No Zero Days! 🎉'
                       : 'Zero Day Pending: Log an application, 30m study, or coding/DSA habit to make today count!',
                   style: TextStyle(
-                    color: todaySuccessful ? AppTheme.success : AppTheme.textSecondary,
-                    fontSize: 12,
+                    color: todaySuccessful ? AppTheme.success : AppTheme.textSecondary(context),
+                    fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -789,50 +718,59 @@ class _ActiveJobsPreview extends StatelessWidget {
         .where((j) => j.status == 'applied' || j.status == 'interview')
         .take(3)
         .toList();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       children: active.map((job) {
         final isInterview = job.status == 'interview';
         return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(14),
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.bgCard,
-            borderRadius: BorderRadius.circular(12),
+            color: AppTheme.cardColor(context),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isInterview
                   ? AppTheme.warning.withOpacity(0.4)
                   : AppTheme.primary.withOpacity(0.2),
               width: 1,
             ),
+            boxShadow: isDark ? null : [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
           ),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: AppTheme.primary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
                   child: Text(
                     job.company[0].toUpperCase(),
                     style: const TextStyle(
                       color: AppTheme.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(job.company,
                         style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 2),
                     Text(job.role,
                         style: Theme.of(context).textTheme.bodyMedium),
                   ],
@@ -840,19 +778,19 @@ class _ActiveJobsPreview extends StatelessWidget {
               ),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: isInterview
                       ? AppTheme.warning.withOpacity(0.15)
                       : AppTheme.secondary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   isInterview ? '🎯 Interview' : '📨 Applied',
                   style: TextStyle(
                     color: isInterview ? AppTheme.warning : AppTheme.secondary,
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -880,67 +818,57 @@ class _SkillProgressOverview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Weekly Skill Study Progress',
-          style: TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        SectionHeader(title: 'Weekly Skill Study Progress'),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.bgCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.bgCardLight, width: 1),
-          ),
+        GlassCard(
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Total logged study this week', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                  Text('Total logged study this week', style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13, fontWeight: FontWeight.w500)),
                   Text(
                     '${ctrl.weeklySkillHours.toStringAsFixed(1)} hrs',
                     style: const TextStyle(
                       color: AppTheme.success,
                       fontWeight: FontWeight.w800,
-                      fontSize: 15,
+                      fontSize: 16,
                     ),
                   ),
                 ],
               ),
               if (skillTotals.isEmpty) ...[
-                const SizedBox(height: 12),
-                const Text('No study sessions logged yet. Head to the Skill tab to log hours.',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-              ] else ...[
                 const SizedBox(height: 16),
+                Text('No study sessions logged yet. Head to the Skill tab to log hours.',
+                    style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13)),
+              ] else ...[
+                const SizedBox(height: 20),
                 ...skillTotals.entries.take(3).map((e) {
                   final maxVal = skillTotals.values.fold(0.0, (a, b) => a > b ? a : b);
                   final pct = maxVal == 0.0 ? 0.0 : e.value / maxVal;
+                  final isDark = Theme.of(context).brightness == Brightness.dark;
+                  
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
+                    padding: const EdgeInsets.only(bottom: 12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(e.key, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text('${e.value.toStringAsFixed(1)} hrs', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                            Text(e.key, style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 13, fontWeight: FontWeight.bold)),
+                            Text('${e.value.toStringAsFixed(1)} hrs', style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13)),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
+                          borderRadius: BorderRadius.circular(6),
                           child: LinearProgressIndicator(
                             value: pct,
-                            minHeight: 4,
-                            backgroundColor: AppTheme.bgCardLight,
+                            minHeight: 6,
+                            backgroundColor: isDark ? AppTheme.dividerDark : AppTheme.dividerLight,
                             valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.success),
                           ),
                         ),
@@ -966,25 +894,23 @@ class _WeeklyReviewBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppTheme.primary, AppTheme.secondary],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        gradient: AppGradients.banner,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppShadows.glowPurple(context),
       ),
       child: Row(
         children: [
-          const Text('📅', style: TextStyle(fontSize: 24)),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Text('📅', style: TextStyle(fontSize: 24)),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -993,20 +919,23 @@ class _WeeklyReviewBanner extends StatelessWidget {
                   'Weekly Career Review Due!',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   'Evaluate your progress for the week ending ${ctrl.lastSundayKey}',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 12),
           ElevatedButton(
             onPressed: () {
               showDialog(
@@ -1018,11 +947,11 @@ class _WeeklyReviewBanner extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppTheme.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 4,
             ),
-            child: const Text('Start Review'),
+            child: const Text('Review', style: TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
       ),
@@ -1039,25 +968,28 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: AppTheme.textSecondary.withOpacity(0.15), width: 1),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppTheme.textSecondary, size: 20),
-          const SizedBox(width: 12),
-          Text(message,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium),
-        ],
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: AppTheme.primary, size: 32),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-

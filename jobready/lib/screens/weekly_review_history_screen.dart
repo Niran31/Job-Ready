@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/habit_controller.dart';
 import '../models/habit_model.dart';
 import '../theme/app_theme.dart';
+import '../widgets/glass_card.dart';
 
 class WeeklyReviewHistoryScreen extends StatelessWidget {
   const WeeklyReviewHistoryScreen({super.key});
@@ -12,42 +13,32 @@ class WeeklyReviewHistoryScreen extends StatelessWidget {
     final ctrl = Get.find<HabitController>();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
         title: const Text('Weekly Reviews History'),
-        elevation: 0,
       ),
       body: Obx(() {
         if (ctrl.weeklyReviews.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(32.0),
+              padding: const EdgeInsets.all(32.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.history_edu_outlined,
-                    color: AppTheme.textSecondary,
-                    size: 72,
+                    Icons.history_edu_rounded,
+                    color: AppTheme.textSecondary(context),
+                    size: 80,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Text(
                     'No Reviews Logged Yet',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
                     'Weekly reviews will show up here after you submit your first Sunday check-in!',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),
@@ -59,7 +50,7 @@ class WeeklyReviewHistoryScreen extends StatelessWidget {
           ..sort((a, b) => b.weekEndDate.compareTo(a.weekEndDate));
 
         return ListView.builder(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           itemCount: sortedReviews.length,
           itemBuilder: (context, index) {
             final review = sortedReviews[index];
@@ -95,33 +86,41 @@ class _ReviewCardState extends State<_ReviewCard> {
   Widget build(BuildContext context) {
     final review = widget.review;
     final gradeColor = _getGradeColor(review.grade);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
+        color: AppTheme.cardColor(context),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: _expanded ? gradeColor.withOpacity(0.5) : AppTheme.bgCardLight,
+          color: _expanded ? gradeColor.withOpacity(0.5) : (isDark ? AppTheme.dividerDark : AppTheme.dividerLight),
           width: _expanded ? 1.5 : 1.0,
         ),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: Column(
           children: [
             // Header
             InkWell(
               onTap: () => setState(() => _expanded = !_expanded),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Row(
                   children: [
                     // Grade Badge
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 56,
+                      height: 56,
                       decoration: BoxDecoration(
                         color: gradeColor.withOpacity(0.15),
                         shape: BoxShape.circle,
@@ -132,39 +131,32 @@ class _ReviewCardState extends State<_ReviewCard> {
                           review.grade,
                           style: TextStyle(
                             color: gradeColor,
-                            fontSize: 20,
+                            fontSize: 24,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 20),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Week Ending ${review.weekEndDate}',
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 4),
                           Text(
                             '+${review.grindScoreChange} grind points earned',
-                            style: const TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontSize: 12,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                       ),
                     ),
                     Icon(
                       _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.textSecondary(context),
                     ),
                   ],
                 ),
@@ -173,57 +165,53 @@ class _ReviewCardState extends State<_ReviewCard> {
 
             // Expandable Content
             if (_expanded) ...[
-              const Divider(color: AppTheme.bgCardLight, height: 1),
+              Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Grid Metrics
-                    const Text(
+                    Text(
                       'Performance Metrics',
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     GridView.count(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       crossAxisCount: 2,
                       childAspectRatio: 2.2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                       children: [
                         _MetricTile(
                           label: 'Applications',
                           value: '${review.applicationsSent}',
-                          icon: Icons.send,
+                          icon: Icons.send_rounded,
                           color: AppTheme.primary,
                         ),
                         _MetricTile(
                           label: 'Interviews',
                           value: '${review.interviewsReceived}',
-                          icon: Icons.forum,
+                          icon: Icons.forum_rounded,
                           color: AppTheme.warning,
                         ),
                         _MetricTile(
                           label: 'Study Hours',
                           value: '${review.skillHoursCompleted.toStringAsFixed(1)}h',
-                          icon: Icons.bolt,
+                          icon: Icons.bolt_rounded,
                           color: AppTheme.success,
                         ),
                         _MetricTile(
                           label: 'Habit Rate',
                           value: '${(review.habitCompletionRate * 100).toStringAsFixed(0)}%',
-                          icon: Icons.check_circle,
+                          icon: Icons.check_circle_rounded,
                           color: AppTheme.secondary,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
 
                     // Strengths & Weaknesses
                     if (review.strengths.isNotEmpty) ...[
@@ -231,19 +219,19 @@ class _ReviewCardState extends State<_ReviewCard> {
                         'Strengths & Highlights',
                         style: TextStyle(color: AppTheme.success, fontSize: 13, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       ...review.strengths.map((s) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.only(bottom: 6),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.arrow_upward, color: AppTheme.success, size: 14),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(s, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12))),
+                            const Icon(Icons.arrow_upward_rounded, color: AppTheme.success, size: 16),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(s, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13))),
                           ],
                         ),
                       )),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 20),
                     ],
 
                     if (review.weaknesses.isNotEmpty) ...[
@@ -251,46 +239,42 @@ class _ReviewCardState extends State<_ReviewCard> {
                         'Areas to Focus / Weaknesses',
                         style: TextStyle(color: AppTheme.accent, fontSize: 13, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       ...review.weaknesses.map((w) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.only(bottom: 6),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.arrow_downward, color: AppTheme.accent, size: 14),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(w, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12))),
+                            const Icon(Icons.arrow_downward_rounded, color: AppTheme.accent, size: 16),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(w, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13))),
                           ],
                         ),
                       )),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                     ],
 
                     // Reflection Notes
                     if (review.reflectionNotes.isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'Personal Reflection Notes',
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppTheme.bgDark.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppTheme.bgCardLight, width: 1),
+                          color: isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, width: 1),
                         ),
                         child: Text(
                           review.reflectionNotes,
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 12,
-                            height: 1.4,
+                          style: TextStyle(
+                            color: AppTheme.textSecondary(context),
+                            fontSize: 13,
+                            height: 1.5,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -322,17 +306,19 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.bgDark.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.bgCardLight.withOpacity(0.5), width: 1),
+        color: isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, width: 1),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 8),
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,17 +326,18 @@ class _MetricTile extends StatelessWidget {
               children: [
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary(context),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 9,
+                  style: TextStyle(
+                    color: AppTheme.textSecondary(context),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],

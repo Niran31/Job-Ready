@@ -5,6 +5,8 @@ import '../controllers/habit_controller.dart';
 import '../models/habit_model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/gradient_button.dart';
 
 class SkillsScreen extends StatelessWidget {
   const SkillsScreen({super.key});
@@ -19,7 +21,6 @@ class SkillsScreen extends StatelessWidget {
     final ctrl = Get.find<HabitController>();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
         title: const Text('Skill tracker'),
         actions: [
@@ -31,6 +32,7 @@ class SkillsScreen extends StatelessWidget {
       ),
       body: Obx(() {
         final logs = ctrl.skillLogs;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
         // Build per-skill summary
         final Map<String, double> skillTotals = {};
@@ -40,20 +42,15 @@ class SkillsScreen extends StatelessWidget {
         }
 
         // Last 7 days bar chart data
-        final weekData = _buildWeekData(logs);
+        final weekData = _buildWeekData(logs, isDark);
 
         return ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           children: [
             // Weekly hours card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppTheme.bgCard,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                    color: AppTheme.primary.withOpacity(0.2), width: 1),
-              ),
+            GlassCard(
+              padding: const EdgeInsets.all(20),
+              borderColor: AppTheme.primary.withOpacity(0.2),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -61,20 +58,27 @@ class SkillsScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('This week',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      Text(
-                        '${ctrl.totalSkillHoursThisWeek.toStringAsFixed(1)} hrs',
-                        style: const TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                          style: Theme.of(context).textTheme.titleLarge),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${ctrl.totalSkillHoursThisWeek.toStringAsFixed(1)} hrs',
+                          style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   SizedBox(
-                    height: 120,
+                    height: 140,
                     child: weekData.isEmpty
                         ? Center(
                             child: Text('Log your first session!',
@@ -90,13 +94,13 @@ class SkillsScreen extends StatelessWidget {
                               barTouchData:
                                   BarTouchData(enabled: false),
                               titlesData: FlTitlesData(
-                                leftTitles: AxisTitles(
+                                leftTitles: const AxisTitles(
                                     sideTitles:
                                         SideTitles(showTitles: false)),
-                                rightTitles: AxisTitles(
+                                rightTitles: const AxisTitles(
                                     sideTitles:
                                         SideTitles(showTitles: false)),
-                                topTitles: AxisTitles(
+                                topTitles: const AxisTitles(
                                     sideTitles:
                                         SideTitles(showTitles: false)),
                                 bottomTitles: AxisTitles(
@@ -106,17 +110,20 @@ class SkillsScreen extends StatelessWidget {
                                       const days = [
                                         'M', 'T', 'W', 'T', 'F', 'S', 'S'
                                       ];
-                                      return Text(
-                                        days[v.toInt() % 7],
-                                        style: const TextStyle(
-                                            color: AppTheme.textSecondary,
-                                            fontSize: 11),
+                                      return Padding(
+                                        padding: const EdgeInsets.only(top: 8.0),
+                                        child: Text(
+                                          days[v.toInt() % 7],
+                                          style: TextStyle(
+                                              color: AppTheme.textSecondary(context),
+                                              fontSize: 12, fontWeight: FontWeight.w600),
+                                        ),
                                       );
                                     },
                                   ),
                                 ),
                               ),
-                              gridData: FlGridData(show: false),
+                              gridData: const FlGridData(show: false),
                               borderData: FlBorderData(show: false),
                               barGroups: weekData,
                             ),
@@ -126,16 +133,16 @@ class SkillsScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // Skill totals
             if (skillTotals.isNotEmpty) ...[
               SectionHeader(
                 title: 'All time',
-                action: 'Log session',
+                action: '+ Log session',
                 onAction: () => _showLogSkillSheet(context, ctrl),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               ...skillTotals.entries.map((e) => _SkillRow(
                     skill: e.key,
                     hours: e.value,
@@ -144,24 +151,33 @@ class SkillsScreen extends StatelessWidget {
                   )),
             ] else ...[
               const SizedBox(height: 40),
-              Center(
-                child: Column(
-                  children: [
-                    const Icon(Icons.bolt_outlined,
-                        color: AppTheme.textSecondary, size: 48),
-                    const SizedBox(height: 12),
-                    Text('No skill logs yet',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
-                    Text('Log your first study session',
-                        style: Theme.of(context).textTheme.bodyMedium),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      onPressed: () => _showLogSkillSheet(context, ctrl),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Log session'),
-                    ),
-                  ],
+              GlassCard(
+                padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.bolt_outlined, color: AppTheme.primary, size: 48),
+                      ),
+                      const SizedBox(height: 24),
+                      Text('No skill logs yet',
+                          style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: 8),
+                      Text('Log your first study session',
+                          style: Theme.of(context).textTheme.bodyMedium),
+                      const SizedBox(height: 32),
+                      GradientButton(
+                        text: 'Log session',
+                        icon: Icons.add,
+                        onPressed: () => _showLogSkillSheet(context, ctrl),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -173,7 +189,7 @@ class SkillsScreen extends StatelessWidget {
     );
   }
 
-  List<BarChartGroupData> _buildWeekData(List<SkillLogModel> logs) {
+  List<BarChartGroupData> _buildWeekData(List<SkillLogModel> logs, bool isDark) {
     final now = DateTime.now();
     final List<BarChartGroupData> result = [];
 
@@ -190,8 +206,8 @@ class SkillsScreen extends StatelessWidget {
         barRods: [
           BarChartRodData(
             toY: total,
-            color: total > 0 ? AppTheme.primary : AppTheme.bgCardLight,
-            width: 18,
+            color: total > 0 ? AppTheme.primary : (isDark ? AppTheme.dividerDark : AppTheme.dividerLight),
+            width: 20,
             borderRadius: BorderRadius.circular(6),
           ),
         ],
@@ -204,61 +220,62 @@ class SkillsScreen extends StatelessWidget {
     String selectedSkill = _suggestedSkills[0];
     double hours = 1.0;
     final notesCtrl = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.bgCard,
+      backgroundColor: AppTheme.cardColor(context),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => Padding(
           padding: EdgeInsets.fromLTRB(
-              20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+              24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Log skill session',
-                  style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 16),
+                  style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: 24),
 
               // Skill chips
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 10,
+                runSpacing: 10,
                 children: _suggestedSkills
                     .map((s) => GestureDetector(
                           onTap: () => setState(() => selectedSkill = s),
-                          child: Container(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                                horizontal: 16, vertical: 10),
                             decoration: BoxDecoration(
                               color: selectedSkill == s
                                   ? AppTheme.primary
-                                  : AppTheme.bgCardLight,
+                                  : (isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: selectedSkill == s
                                     ? AppTheme.primary
-                                    : AppTheme.textSecondary
-                                        .withOpacity(0.2),
+                                    : Colors.transparent,
                               ),
                             ),
                             child: Text(s,
                                 style: TextStyle(
                                   color: selectedSkill == s
                                       ? Colors.white
-                                      : AppTheme.textSecondary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
+                                      : AppTheme.textSecondary(context),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                 )),
                           ),
                         ))
                     .toList(),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
 
               // Hours slider
               Row(
@@ -266,48 +283,52 @@ class SkillsScreen extends StatelessWidget {
                 children: [
                   Text('Hours studied',
                       style: Theme.of(context).textTheme.titleMedium),
-                  Text(
-                    '${hours.toStringAsFixed(1)} hrs',
-                    style: const TextStyle(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${hours.toStringAsFixed(1)} hrs',
+                      style: const TextStyle(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
               Slider(
                 value: hours,
                 min: 0.5,
                 max: 8.0,
                 divisions: 15,
-                activeColor: AppTheme.primary,
-                inactiveColor: AppTheme.bgCardLight,
                 onChanged: (v) => setState(() => hours = v),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 20),
 
               TextField(
                 controller: notesCtrl,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.textPrimary(context)),
                 decoration: const InputDecoration(
                   hintText: 'Notes (optional) — what did you learn?',
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
 
-              SizedBox(
+              GradientButton(
+                text: 'Log session',
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    ctrl.logSkill(selectedSkill, hours,
-                        notes: notesCtrl.text.trim().isEmpty
-                            ? null
-                            : notesCtrl.text.trim());
-                    Navigator.pop(ctx);
-                  },
-                  child: const Text('Log session'),
-                ),
+                onPressed: () {
+                  ctrl.logSkill(selectedSkill, hours,
+                      notes: notesCtrl.text.trim().isEmpty
+                          ? null
+                          : notesCtrl.text.trim());
+                  Navigator.pop(ctx);
+                },
               ),
             ],
           ),
@@ -328,14 +349,11 @@ class _SkillRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pct = maxHours == 0 ? 0.0 : hours / maxHours;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -347,18 +365,18 @@ class _SkillRow extends StatelessWidget {
                 '${hours.toStringAsFixed(1)} hrs',
                 style: const TextStyle(
                     color: AppTheme.secondary,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 14),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: pct,
-              minHeight: 6,
-              backgroundColor: AppTheme.bgCardLight,
+              minHeight: 8,
+              backgroundColor: isDark ? AppTheme.dividerDark : AppTheme.dividerLight,
               valueColor:
                   const AlwaysStoppedAnimation<Color>(AppTheme.secondary),
             ),

@@ -5,6 +5,10 @@ import '../controllers/habit_controller.dart';
 import '../services/notification_service.dart';
 import '../services/sync_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_gradients.dart';
+import '../widgets/section_header.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/gradient_button.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -59,66 +63,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         children: [
           // Profile section
-          _SectionTitle(title: 'Profile'),
+          SectionHeader(title: 'Profile'),
+          const SizedBox(height: 12),
           _SettingsTile(
             icon: Icons.person_outline,
             title: 'Your name',
             trailing: Text(_userName,
-                style: const TextStyle(color: AppTheme.textSecondary)),
+                style: TextStyle(color: AppTheme.textSecondary(context), fontWeight: FontWeight.bold)),
             onTap: () => _showNameDialog(),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
           // Targets section
-          _SectionTitle(title: '🎯 Weekly career targets'),
+          SectionHeader(title: '🎯 Weekly career targets'),
+          const SizedBox(height: 12),
           _TargetsContainer(ctrl: Get.find<HabitController>()),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
           // Lazy mode section
-          _SectionTitle(title: '⚠️ Lazy mode blocker'),
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.bgCard,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _lazyModeEnabled
-                    ? AppTheme.accent.withOpacity(0.3)
-                    : AppTheme.textSecondary.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
+          SectionHeader(title: '⚠️ Lazy mode blocker'),
+          const SizedBox(height: 12),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            borderColor: _lazyModeEnabled
+                ? AppTheme.accent.withOpacity(0.3)
+                : AppTheme.textSecondary(context).withOpacity(0.1),
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.all(20),
                   child: Row(
                     children: [
-                      const Icon(Icons.alarm,
-                          color: AppTheme.accent, size: 20),
-                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accent.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.alarm, color: AppTheme.accent, size: 24),
+                      ),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Daily check-in alarm',
-                                style: TextStyle(
-                                    color: AppTheme.textPrimary,
-                                    fontWeight: FontWeight.w600)),
+                            Text('Daily check-in alarm',
+                                style: Theme.of(context).textTheme.titleMedium),
+                            const SizedBox(height: 4),
                             Text(
                               'If you haven\'t logged by this time — BUZZ!',
-                              style: const TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 12),
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
                         ),
@@ -135,26 +139,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 if (_lazyModeEnabled) ...[
-                  const Divider(
-                      color: AppTheme.bgCardLight, height: 1),
+                  Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
                   InkWell(
                     onTap: () => _pickAlarmTime(),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Alarm time',
+                          Text('Alarm time',
                               style: TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontWeight: FontWeight.w500)),
-                          Text(
-                            _formatTime(_alarmHour, _alarmMinute),
-                            style: const TextStyle(
-                              color: AppTheme.accent,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
+                                  color: AppTheme.textPrimary(context),
+                                  fontWeight: FontWeight.w600)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accent.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              _formatTime(_alarmHour, _alarmMinute),
+                              style: const TextStyle(
+                                color: AppTheme.accent,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ],
@@ -165,37 +174,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-
-          const SizedBox(height: 12),
-          const Text(
+          const SizedBox(height: 16),
+          Text(
             'This alarm fires every day at your set time if you haven\'t checked off any habits. Stay accountable bro! 🔥',
             style: TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 12,
+                color: AppTheme.textSecondary(context),
+                fontSize: 13,
                 height: 1.5),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
 
           // GitHub tracking section
-          _SectionTitle(title: '💻 GitHub Commit Auto-Tracker'),
+          SectionHeader(title: '💻 GitHub Commit Tracker'),
+          const SizedBox(height: 12),
           _GitHubSettingsCard(ctrl: Get.find<HabitController>()),
-
-          const SizedBox(height: 24),
-
-          // Firebase sync section
-          _SectionTitle(title: '☁️ Firebase Cloud Sync'),
-          const _FirebaseSettingsCard(),
 
           const SizedBox(height: 32),
 
+          // Firebase sync section
+          SectionHeader(title: '☁️ Firebase Cloud Sync'),
+          const SizedBox(height: 12),
+          const _FirebaseSettingsCard(),
+
+          const SizedBox(height: 40),
+
           // About
-          _SectionTitle(title: 'About'),
+          SectionHeader(title: 'About'),
+          const SizedBox(height: 12),
           _SettingsTile(
             icon: Icons.info_outline,
             title: 'App version',
-            trailing: const Text('1.0.0',
-                style: TextStyle(color: AppTheme.textSecondary)),
+            trailing: Text('1.0.0', style: TextStyle(color: AppTheme.textSecondary(context))),
           ),
           _SettingsTile(
             icon: Icons.code,
@@ -203,7 +213,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Text('Niran × Velzyn Labs',
                 style: TextStyle(
                     color: AppTheme.secondary,
-                    fontWeight: FontWeight.w600)),
+                    fontWeight: FontWeight.w800)),
           ),
 
           const SizedBox(height: 100),
@@ -218,7 +228,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       initialTime: TimeOfDay(hour: _alarmHour, minute: _alarmMinute),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(primary: AppTheme.accent),
+          colorScheme: const ColorScheme.light(primary: AppTheme.accent),
         ),
         child: child!,
       ),
@@ -233,7 +243,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Alarm set for ${_formatTime(_alarmHour, _alarmMinute)} 🔔'),
-          backgroundColor: AppTheme.bgCard,
+          backgroundColor: AppTheme.cardColor(context),
+          behavior: SnackBarBehavior.floating,
         ));
       }
     }
@@ -244,48 +255,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.bgCard,
-        title: const Text('Your name',
-            style: TextStyle(color: AppTheme.textPrimary)),
+        backgroundColor: AppTheme.cardColor(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('Your name',
+            style: TextStyle(color: AppTheme.textPrimary(context), fontWeight: FontWeight.bold)),
         content: TextField(
           controller: ctrl,
           autofocus: true,
-          style: const TextStyle(color: AppTheme.textPrimary),
+          style: TextStyle(color: AppTheme.textPrimary(context)),
           decoration: const InputDecoration(hintText: 'Enter name'),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel',
-                  style: TextStyle(color: AppTheme.textSecondary))),
+              child: Text('Cancel',
+                  style: TextStyle(color: AppTheme.textSecondary(context)))),
           ElevatedButton(
             onPressed: () {
               setState(() => _userName = ctrl.text.trim());
               _savePrefs();
               Navigator.pop(ctx);
             },
-            child: const Text('Save'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(title,
-          style: const TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.8)),
     );
   }
 }
@@ -304,24 +302,18 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.zero,
       child: Material(
         color: Colors.transparent,
         child: ListTile(
-          leading: Icon(icon, color: AppTheme.textSecondary, size: 20),
-          title: Text(title,
-              style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontWeight: FontWeight.w500)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+          leading: Icon(icon, color: AppTheme.primary, size: 24),
+          title: Text(title, style: Theme.of(context).textTheme.titleMedium),
           trailing: trailing,
           onTap: onTap,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         ),
       ),
     );
@@ -336,15 +328,11 @@ class _TargetsContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.primary.withOpacity(0.15),
-          width: 1,
-        ),
-      ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      borderColor: AppTheme.primary.withOpacity(0.15),
       child: Obx(() => Column(
         children: [
           _TargetCounterRow(
@@ -359,7 +347,7 @@ class _TargetsContainer extends StatelessWidget {
               ctrl.updateTargets(jobsVal: ctrl.targetJobs.value + 1);
             },
           ),
-          const Divider(color: AppTheme.bgCardLight, height: 1),
+          Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
           _TargetCounterRow(
             label: 'Study hours',
             valueText: '${ctrl.targetHours.value.toStringAsFixed(0)}h',
@@ -372,7 +360,7 @@ class _TargetsContainer extends StatelessWidget {
               ctrl.updateTargets(hoursVal: ctrl.targetHours.value + 1.0);
             },
           ),
-          const Divider(color: AppTheme.bgCardLight, height: 1),
+          Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
           _TargetCounterRow(
             label: 'Coding sessions',
             valueText: '${ctrl.targetCoding.value}',
@@ -385,7 +373,7 @@ class _TargetsContainer extends StatelessWidget {
               ctrl.updateTargets(codingVal: ctrl.targetCoding.value + 1);
             },
           ),
-          const Divider(color: AppTheme.bgCardLight, height: 1),
+          Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
           _TargetCounterRow(
             label: 'DSA sessions',
             valueText: '${ctrl.targetDsa.value}',
@@ -420,32 +408,32 @@ class _TargetCounterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w500)),
+          Text(label, style: TextStyle(color: AppTheme.textPrimary(context), fontWeight: FontWeight.w600)),
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.remove_circle_outline, color: AppTheme.secondary, size: 20),
+                icon: const Icon(Icons.remove_circle_outline, color: AppTheme.secondary, size: 24),
                 onPressed: onDecrement,
               ),
               SizedBox(
-                width: 40,
+                width: 44,
                 child: Center(
                   child: Text(
                     valueText,
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                    style: TextStyle(
+                      color: AppTheme.textPrimary(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 20),
+                icon: const Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 24),
                 onPressed: onIncrement,
               ),
             ],
@@ -483,28 +471,17 @@ class _GitHubSettingsCardState extends State<_GitHubSettingsCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.textSecondary.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
       child: Obx(() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Auto-track GitHub commits',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               Switch(
                 value: widget.ctrl.enableGithubTracking.value,
@@ -515,51 +492,40 @@ class _GitHubSettingsCardState extends State<_GitHubSettingsCard> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           TextField(
             controller: _userCtrl,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-            decoration: const InputDecoration(
+            style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 14),
+            decoration: InputDecoration(
               hintText: 'Enter GitHub username',
               labelText: 'GitHub Username',
-              labelStyle: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-              prefixIcon: Icon(Icons.code, color: AppTheme.textSecondary, size: 20),
+              labelStyle: TextStyle(color: AppTheme.textSecondary(context), fontSize: 12),
+              prefixIcon: Icon(Icons.code, color: AppTheme.textSecondary(context), size: 20),
             ),
             onChanged: (v) {
               widget.ctrl.updateGitHubSettings(v.trim(), widget.ctrl.enableGithubTracking.value);
             },
           ),
           if (widget.ctrl.enableGithubTracking.value) ...[
-            const SizedBox(height: 16),
-            SizedBox(
+            const SizedBox(height: 24),
+            GradientButton(
+              text: widget.ctrl.isGithubSyncing.value ? 'Syncing...' : 'Sync GitHub Now',
+              icon: Icons.sync,
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: widget.ctrl.isGithubSyncing.value
-                    ? null
-                    : () async {
-                        await widget.ctrl.checkGitHubCommits();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('GitHub sync completed! checked for today\'s commits 🔔'),
-                              backgroundColor: AppTheme.bgCard,
-                            ),
-                          );
-                        }
-                      },
-                icon: widget.ctrl.isGithubSyncing.value
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.sync, size: 18),
-                label: Text(widget.ctrl.isGithubSyncing.value ? 'Syncing...' : 'Sync GitHub Now'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.bgCardLight,
-                  foregroundColor: AppTheme.textPrimary,
-                ),
-              ),
+              onPressed: widget.ctrl.isGithubSyncing.value
+                  ? () {}
+                  : () async {
+                      await widget.ctrl.checkGitHubCommits();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('GitHub sync completed! checked for today\'s commits 🔔'),
+                            backgroundColor: AppTheme.cardColor(context),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
             ),
           ],
         ],
@@ -611,7 +577,8 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_isLogin ? 'Logged in successfully! 🎉' : 'Account created and synced! 🚀'),
-            backgroundColor: AppTheme.bgCard,
+            backgroundColor: AppTheme.cardColor(context),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -620,7 +587,8 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Auth error: ${e.toString().replaceAll(RegExp(r'\[.*?\]'), '')}'),
-            backgroundColor: AppTheme.accent.withOpacity(0.8),
+            backgroundColor: AppTheme.accent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -632,7 +600,7 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
   @override
   Widget build(BuildContext context) {
     if (!Get.isRegistered<SyncService>()) {
-      return _buildFallbackCard(reason: 'SyncService is not initialized.');
+      return _buildFallbackCard(context, 'SyncService is not initialized.');
     }
 
     final syncService = SyncService.to;
@@ -640,81 +608,82 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
     return Obx(() {
       if (!syncService.isFirebaseAvailable.value) {
         return _buildFallbackCard(
-          reason: 'Firebase is running in local-offline mode. Please configure Firebase options using flutterfire CLI to sync online.',
+          context,
+          'Firebase is running in local-offline mode. Please configure Firebase options using flutterfire CLI to sync online.',
         );
       }
 
       final user = syncService.currentUser.value;
 
       if (user != null) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.bgCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.success.withOpacity(0.3), width: 1),
-          ),
+        return GlassCard(
+          padding: const EdgeInsets.all(24),
+          borderColor: AppTheme.success.withOpacity(0.3),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.cloud_done, color: AppTheme.success, size: 24),
-                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.success.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.cloud_done, color: AppTheme.success, size: 24),
+                  ),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Cloud Backup Active',
-                          style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           user.email ?? 'Authenticated',
-                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: GradientButton(
+                      text: syncService.isSyncing.value ? 'Syncing...' : 'Sync Now',
+                      icon: Icons.sync,
                       onPressed: syncService.isSyncing.value
-                          ? null
+                          ? () {}
                           : () async {
                               await syncService.syncAll(user.uid);
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Data sync complete! ☁️'),
-                                    backgroundColor: AppTheme.bgCard,
+                                  SnackBar(
+                                    content: const Text('Data sync complete! ☁️'),
+                                    backgroundColor: AppTheme.cardColor(context),
+                                    behavior: SnackBarBehavior.floating,
                                   ),
                                 );
                               }
                             },
-                      icon: syncService.isSyncing.value
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Icon(Icons.sync, size: 16),
-                      label: Text(syncService.isSyncing.value ? 'Syncing...' : 'Sync Now'),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   OutlinedButton.icon(
                     onPressed: () => syncService.logout(),
-                    icon: const Icon(Icons.logout, size: 16),
-                    label: const Text('Log out'),
+                    icon: const Icon(Icons.logout, size: 20),
+                    label: const Text('Log out', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.accent,
-                      side: const BorderSide(color: AppTheme.accent),
+                      side: const BorderSide(color: AppTheme.accent, width: 1.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
                 ],
@@ -724,13 +693,8 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
         );
       }
 
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.bgCard,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.textSecondary.withOpacity(0.1), width: 1),
-        ),
+      return GlassCard(
+        padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
@@ -738,53 +702,44 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
             children: [
               Text(
                 _isLogin ? 'Sign in to Cloud Sync' : 'Create Sync Account',
-                style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _emailCtrl,
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-                decoration: const InputDecoration(
+                style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 14),
+                decoration: InputDecoration(
                   labelText: 'Email Address',
-                  labelStyle: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-                  prefixIcon: Icon(Icons.email, color: AppTheme.textSecondary, size: 18),
+                  labelStyle: TextStyle(color: AppTheme.textSecondary(context), fontSize: 12),
+                  prefixIcon: Icon(Icons.email, color: AppTheme.textSecondary(context), size: 20),
                 ),
                 validator: (val) => val == null || !val.contains('@') ? 'Enter a valid email' : null,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordCtrl,
                 obscureText: true,
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-                decoration: const InputDecoration(
+                style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 14),
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  labelStyle: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-                  prefixIcon: Icon(Icons.lock, color: AppTheme.textSecondary, size: 18),
+                  labelStyle: TextStyle(color: AppTheme.textSecondary(context), fontSize: 12),
+                  prefixIcon: Icon(Icons.lock, color: AppTheme.textSecondary(context), size: 20),
                 ),
                 validator: (val) => val == null || val.length < 6 ? 'Password must be at least 6 characters' : null,
               ),
-              const SizedBox(height: 16),
-              SizedBox(
+              const SizedBox(height: 24),
+              GradientButton(
+                text: _isLogin ? 'Sign In' : 'Register',
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _submit,
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
-                  child: _loading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                        )
-                      : Text(_isLogin ? 'Sign In' : 'Register'),
-                ),
+                onPressed: _loading ? () {} : _submit,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               Center(
                 child: TextButton(
                   onPressed: () => setState(() => _isLogin = !_isLogin),
                   child: Text(
                     _isLogin ? 'Don\'t have an account? Register' : 'Already have an account? Sign In',
-                    style: const TextStyle(color: AppTheme.secondary, fontSize: 12),
+                    style: const TextStyle(color: AppTheme.secondary, fontSize: 13, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -795,35 +750,23 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
     });
   }
 
-  Widget _buildFallbackCard({required String reason}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.warning.withOpacity(0.3), width: 1),
-      ),
+  Widget _buildFallbackCard(BuildContext context, String reason) {
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.cloud_off, color: AppTheme.warning, size: 24),
-              SizedBox(width: 12),
-              Text(
-                'Cloud Sync Offline',
-                style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
-              ),
+            children: [
+              const Icon(Icons.cloud_off, color: AppTheme.accent, size: 24),
+              const SizedBox(width: 12),
+              Text('Cloud Sync Offline', style: Theme.of(context).textTheme.titleMedium),
             ],
           ),
-          const SizedBox(height: 10),
-          Text(
-            reason,
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.5),
-          ),
+          const SizedBox(height: 12),
+          Text(reason, style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13, height: 1.5)),
         ],
       ),
     );
   }
 }
-
