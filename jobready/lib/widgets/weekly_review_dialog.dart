@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/habit_controller.dart';
 import '../theme/app_theme.dart';
-import '../widgets/glass_card.dart';
-import '../widgets/gradient_button.dart';
+import '../widgets/saas_card.dart';
+import '../widgets/saas_button.dart';
 
 class WeeklyReviewDialog extends StatefulWidget {
   const WeeklyReviewDialog({super.key});
@@ -108,10 +108,9 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: GlassCard(
+      child: SaasCard(
         padding: const EdgeInsets.all(24),
         borderColor: AppTheme.primary.withOpacity(0.2),
-        isImportant: true,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -141,7 +140,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
                   gradient: LinearGradient(
                     colors: [
                       gradeColor.withOpacity(0.15),
-                      isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight,
+                      isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight,
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
@@ -287,7 +286,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
                 style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Write down what went well, what blocked you, and your plan for next week...',
-                  fillColor: isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight,
+                  fillColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight,
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -298,7 +297,7 @@ class _WeeklyReviewDialogState extends State<WeeklyReviewDialog> {
               const SizedBox(height: 32),
 
               // Submit Button
-              GradientButton(
+              SaasButton(
                 text: 'Submit Weekly Review',
                 width: double.infinity,
                 onPressed: () {

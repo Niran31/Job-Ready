@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../controllers/habit_controller.dart';
 import '../models/habit_model.dart';
 import '../theme/app_theme.dart';
-import '../widgets/glass_card.dart';
 
 class WeeklyReviewHistoryScreen extends StatelessWidget {
   const WeeklyReviewHistoryScreen({super.key});
@@ -265,7 +264,7 @@ class _ReviewCardState extends State<_ReviewCard> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight,
+                          color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, width: 1),
                         ),
@@ -311,7 +310,7 @@ class _MetricTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight,
+        color: isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, width: 1),
       ),

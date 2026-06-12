@@ -5,8 +5,8 @@ import '../controllers/habit_controller.dart';
 import '../models/habit_model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
-import '../widgets/glass_card.dart';
-import '../widgets/gradient_button.dart';
+import '../widgets/saas_card.dart';
+import '../widgets/saas_button.dart';
 
 class SkillsScreen extends StatelessWidget {
   const SkillsScreen({super.key});
@@ -48,7 +48,7 @@ class SkillsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           children: [
             // Weekly hours card
-            GlassCard(
+            SaasCard(
               padding: const EdgeInsets.all(20),
               borderColor: AppTheme.primary.withOpacity(0.2),
               child: Column(
@@ -151,7 +151,7 @@ class SkillsScreen extends StatelessWidget {
                   )),
             ] else ...[
               const SizedBox(height: 40),
-              GlassCard(
+              SaasCard(
                 padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
                 child: Center(
                   child: Column(
@@ -171,7 +171,7 @@ class SkillsScreen extends StatelessWidget {
                       Text('Log your first study session',
                           style: Theme.of(context).textTheme.bodyMedium),
                       const SizedBox(height: 32),
-                      GradientButton(
+                      SaasButton(
                         text: 'Log session',
                         icon: Icons.add,
                         onPressed: () => _showLogSkillSheet(context, ctrl),
@@ -255,7 +255,7 @@ class SkillsScreen extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: selectedSkill == s
                                   ? AppTheme.primary
-                                  : (isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight),
+                                  : (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: selectedSkill == s
@@ -319,7 +319,7 @@ class SkillsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
-              GradientButton(
+              SaasButton(
                 text: 'Log session',
                 width: double.infinity,
                 onPressed: () {
@@ -351,7 +351,7 @@ class _SkillRow extends StatelessWidget {
     final pct = maxHours == 0 ? 0.0 : hours / maxHours;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GlassCard(
+    return SaasCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       child: Column(

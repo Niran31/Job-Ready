@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -13,7 +14,6 @@ import 'screens/settings_screen.dart';
 import 'services/notification_service.dart';
 import 'services/sync_service.dart';
 import 'theme/app_theme.dart';
-import 'theme/app_shadows.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,11 +21,16 @@ void main() async {
   // Init Firebase (graceful fallback if config is missing)
   bool firebaseAvailable = false;
   try {
-    // Try initializing. On mobile, it will load GoogleServices config.
-    // If firebase_options.dart is generated later, it can be passed here.
-    await Firebase.initializeApp();
-    firebaseAvailable = true;
-    debugPrint('Firebase initialized successfully.');
+    if (kIsWeb) {
+      // For web, Firebase requires options. We skip init if options are missing
+      // to avoid crashing the app.
+      debugPrint('Firebase on Web requires firebase_options.dart config. Currently running without Firebase on Web.');
+    } else {
+      // Try initializing. On mobile, it will load GoogleServices config.
+      await Firebase.initializeApp();
+      firebaseAvailable = true;
+      debugPrint('Firebase initialized successfully.');
+    }
   } catch (e) {
     debugPrint('Firebase not configured or initialization failed: $e');
   }
@@ -59,8 +64,8 @@ class JobReadyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'JobReady',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light, // Default to light mode, can be made dynamic later
       home: const MainNavigation(),
     );
@@ -87,77 +92,63 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      extendBody: true, // Let screens flow behind the floating nav bar
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),
         decoration: BoxDecoration(
-          boxShadow: AppShadows.navBar(context),
+          color: AppTheme.cardColor(context),
+          border: Border(
+            top: BorderSide(
+              color: AppTheme.divider(context),
+              width: 1,
+            ),
+          ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-            child: Container(
-              height: 72,
-              decoration: BoxDecoration(
-                color: isDark 
-                    ? AppTheme.cardDark.withOpacity(0.8)
-                    : Colors.white.withOpacity(0.85),
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(
-                  color: isDark 
-                      ? AppTheme.dividerDark.withOpacity(0.5)
-                      : Colors.white.withOpacity(0.5),
-                  width: 1.5,
+        child: SafeArea(
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _NavItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: 'Home',
+                  isSelected: _currentIndex == 0,
+                  onTap: () => setState(() => _currentIndex = 0),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _NavItem(
-                    icon: Icons.home_outlined,
-                    activeIcon: Icons.home_rounded,
-                    label: 'Home',
-                    isSelected: _currentIndex == 0,
-                    onTap: () => setState(() => _currentIndex = 0),
-                  ),
-                  _NavItem(
-                    icon: Icons.work_outline,
-                    activeIcon: Icons.work_rounded,
-                    label: 'Jobs',
-                    isSelected: _currentIndex == 1,
-                    onTap: () => setState(() => _currentIndex = 1),
-                  ),
-                  _NavItem(
-                    icon: Icons.bolt_outlined,
-                    activeIcon: Icons.bolt_rounded,
-                    label: 'Skills',
-                    isSelected: _currentIndex == 2,
-                    onTap: () => setState(() => _currentIndex = 2),
-                  ),
-                  _NavItem(
-                    icon: Icons.bar_chart_outlined,
-                    activeIcon: Icons.bar_chart_rounded,
-                    label: 'Stats',
-                    isSelected: _currentIndex == 3,
-                    onTap: () => setState(() => _currentIndex = 3),
-                  ),
-                  _NavItem(
-                    icon: Icons.settings_outlined,
-                    activeIcon: Icons.settings_rounded,
-                    label: 'Settings',
-                    isSelected: _currentIndex == 4,
-                    onTap: () => setState(() => _currentIndex = 4),
-                  ),
-                ],
-              ),
+                _NavItem(
+                  icon: Icons.work_outline,
+                  activeIcon: Icons.work_rounded,
+                  label: 'Jobs',
+                  isSelected: _currentIndex == 1,
+                  onTap: () => setState(() => _currentIndex = 1),
+                ),
+                _NavItem(
+                  icon: Icons.bolt_outlined,
+                  activeIcon: Icons.bolt_rounded,
+                  label: 'Skills',
+                  isSelected: _currentIndex == 2,
+                  onTap: () => setState(() => _currentIndex = 2),
+                ),
+                _NavItem(
+                  icon: Icons.bar_chart_outlined,
+                  activeIcon: Icons.bar_chart_rounded,
+                  label: 'Stats',
+                  isSelected: _currentIndex == 3,
+                  onTap: () => setState(() => _currentIndex = 3),
+                ),
+                _NavItem(
+                  icon: Icons.settings_outlined,
+                  activeIcon: Icons.settings_rounded,
+                  label: 'Settings',
+                  isSelected: _currentIndex == 4,
+                  onTap: () => setState(() => _currentIndex = 4),
+                ),
+              ],
             ),
           ),
         ),
@@ -187,32 +178,26 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 56,
+        width: 64,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, animation) {
-                return ScaleTransition(scale: animation, child: child);
-              },
-              child: Icon(
-                isSelected ? activeIcon : icon,
-                key: ValueKey(isSelected),
-                color: isSelected 
-                    ? AppTheme.primary 
-                    : AppTheme.textSecondary(context).withOpacity(0.7),
-                size: 26,
-              ),
+            Icon(
+              isSelected ? activeIcon : icon,
+              color: isSelected 
+                  ? AppTheme.primary 
+                  : AppTheme.textSecondary(context),
+              size: 24,
             ),
             const SizedBox(height: 4),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: 4,
-              width: 4,
-              decoration: BoxDecoration(
-                color: isSelected ? AppTheme.accent : Colors.transparent,
-                shape: BoxShape.circle,
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected 
+                    ? AppTheme.primary 
+                    : AppTheme.textSecondary(context),
               ),
             ),
           ],

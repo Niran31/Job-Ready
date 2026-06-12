@@ -5,10 +5,9 @@ import '../controllers/habit_controller.dart';
 import '../services/notification_service.dart';
 import '../services/sync_service.dart';
 import '../theme/app_theme.dart';
-import '../theme/app_gradients.dart';
 import '../widgets/section_header.dart';
-import '../widgets/glass_card.dart';
-import '../widgets/gradient_button.dart';
+import '../widgets/saas_card.dart';
+import '../widgets/saas_button.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -93,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // Lazy mode section
           SectionHeader(title: '⚠️ Lazy mode blocker'),
           const SizedBox(height: 12),
-          GlassCard(
+          SaasCard(
             padding: EdgeInsets.zero,
             borderColor: _lazyModeEnabled
                 ? AppTheme.accent.withOpacity(0.3)
@@ -302,7 +301,7 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return SaasCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.zero,
       child: Material(
@@ -330,7 +329,7 @@ class _TargetsContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return GlassCard(
+    return SaasCard(
       padding: EdgeInsets.zero,
       borderColor: AppTheme.primary.withOpacity(0.15),
       child: Obx(() => Column(
@@ -471,7 +470,7 @@ class _GitHubSettingsCardState extends State<_GitHubSettingsCard> {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.all(24),
       child: Obx(() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,7 +507,7 @@ class _GitHubSettingsCardState extends State<_GitHubSettingsCard> {
           ),
           if (widget.ctrl.enableGithubTracking.value) ...[
             const SizedBox(height: 24),
-            GradientButton(
+            SaasButton(
               text: widget.ctrl.isGithubSyncing.value ? 'Syncing...' : 'Sync GitHub Now',
               icon: Icons.sync,
               width: double.infinity,
@@ -616,7 +615,7 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
       final user = syncService.currentUser.value;
 
       if (user != null) {
-        return GlassCard(
+        return SaasCard(
           padding: const EdgeInsets.all(24),
           borderColor: AppTheme.success.withOpacity(0.3),
           child: Column(
@@ -655,7 +654,7 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
               Row(
                 children: [
                   Expanded(
-                    child: GradientButton(
+                    child: SaasButton(
                       text: syncService.isSyncing.value ? 'Syncing...' : 'Sync Now',
                       icon: Icons.sync,
                       onPressed: syncService.isSyncing.value
@@ -693,7 +692,7 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
         );
       }
 
-      return GlassCard(
+      return SaasCard(
         padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
@@ -728,7 +727,7 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
                 validator: (val) => val == null || val.length < 6 ? 'Password must be at least 6 characters' : null,
               ),
               const SizedBox(height: 24),
-              GradientButton(
+              SaasButton(
                 text: _isLogin ? 'Sign In' : 'Register',
                 width: double.infinity,
                 onPressed: _loading ? () {} : _submit,
@@ -751,7 +750,7 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
   }
 
   Widget _buildFallbackCard(BuildContext context, String reason) {
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -3,9 +3,8 @@ import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../controllers/habit_controller.dart';
 import '../theme/app_theme.dart';
-import '../theme/app_gradients.dart';
 import '../widgets/section_header.dart';
-import '../widgets/glass_card.dart';
+import '../widgets/saas_card.dart';
 import 'weekly_review_history_screen.dart';
 
 class StatsScreen extends StatelessWidget {
@@ -165,11 +164,9 @@ class _GrindScoreDetailsCardState extends State<_GrindScoreDetailsCard> {
       }
     }
 
-    return GlassCard(
+    return SaasCard(
       padding: EdgeInsets.zero,
-      gradient: AppGradients.welcomeCard(context),
       borderColor: AppTheme.primary.withOpacity(0.3),
-      isImportant: true,
       child: Column(
         children: [
           Padding(
@@ -252,7 +249,7 @@ class _GrindScoreDetailsCardState extends State<_GrindScoreDetailsCard> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: isDark ? AppTheme.cardDarkAlt.withOpacity(0.5) : AppTheme.surfaceLight.withOpacity(0.5),
+                color: isDark ? AppTheme.surfaceDark.withOpacity(0.5) : AppTheme.surfaceLight.withOpacity(0.5),
                 borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
               ),
               child: Column(
@@ -325,7 +322,7 @@ class _WeeklyReviewHistoryNavCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return SaasCard(
       padding: EdgeInsets.zero,
       child: Material(
         color: Colors.transparent,
@@ -384,7 +381,7 @@ class _InterviewConversionCard extends StatelessWidget {
     final interviews = ctrl.totalInterviewsScheduled;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.all(24),
       borderColor: AppTheme.warning.withOpacity(0.25),
       child: Row(
@@ -452,12 +449,12 @@ class _FutureProjectionWidget extends StatelessWidget {
     if (status == 'Ahead') {
       statusColor = AppTheme.success;
     } else if (status == 'Behind') {
-      statusColor = AppTheme.error;
+      statusColor = AppTheme.danger;
     } else {
       statusColor = AppTheme.primary;
     }
 
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.all(24),
       borderColor: statusColor.withOpacity(0.25),
       child: Column(
@@ -564,7 +561,7 @@ class _ChartSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -827,13 +824,13 @@ class _JobFunnelWidget extends StatelessWidget {
       ('Applied 📨', 'applied', AppTheme.primary),
       ('Interviews 🎯', 'interview', AppTheme.warning),
       ('Offers 🎉', 'offer', AppTheme.success),
-      ('Rejected ❌', 'rejected', AppTheme.error),
-      ('Ghosted 👻', 'ghosted', AppTheme.textMuted),
+      ('Rejected ❌', 'rejected', AppTheme.danger),
+      ('Ghosted 👻', 'ghosted', AppTheme.textSecondary(context)),
     ];
     final total = ctrl.jobs.length;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: stages.map((s) {

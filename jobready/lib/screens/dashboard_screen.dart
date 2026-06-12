@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/habit_controller.dart';
 import '../theme/app_theme.dart';
-import '../theme/app_gradients.dart';
-import '../theme/app_shadows.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/habit_tile.dart';
 import '../widgets/section_header.dart';
 import '../widgets/weekly_review_dialog.dart';
-import '../widgets/glass_card.dart';
-import '../widgets/gradient_button.dart';
+import '../widgets/saas_card.dart';
+import '../widgets/saas_button.dart';
 import '../services/sync_service.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -249,7 +247,7 @@ class DashboardScreen extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: selectedEmoji == e 
                                   ? AppTheme.primary.withOpacity(0.15) 
-                                  : (isDark ? AppTheme.cardDarkAlt : AppTheme.surfaceLight),
+                                  : (isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: selectedEmoji == e 
@@ -265,7 +263,7 @@ class DashboardScreen extends StatelessWidget {
                   .toList(),
             ),
             const SizedBox(height: 32),
-            GradientButton(
+            SaasButton(
               text: 'Add habit',
               width: double.infinity,
               onPressed: () {
@@ -298,33 +296,27 @@ class _UnemploymentCounter extends StatelessWidget {
     String statusTitle;
     String statusDesc;
     IconData icon;
-    LinearGradient bgGradient;
 
     if (status == 'Employed Mode') {
       statusColor = AppTheme.success;
       statusTitle = 'Employed Mode';
       statusDesc = 'Offer Accepted! Let\'s go! 🎉';
       icon = Icons.emoji_events;
-      bgGradient = AppGradients.successGlow(context);
     } else if (status == 'Internship Mode') {
       statusColor = AppTheme.secondary;
       statusTitle = 'Internship Mode';
       statusDesc = '$days days until internship ends (June 22)';
       icon = Icons.badge_outlined;
-      bgGradient = AppGradients.statusGradient(AppTheme.secondary, context);
     } else {
       statusColor = AppTheme.accent;
       statusTitle = 'Job Hunt Mode';
       statusDesc = '$days days since internship ended';
       icon = Icons.explore_outlined;
-      bgGradient = AppGradients.statusGradient(AppTheme.accent, context);
     }
 
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.all(20),
-      gradient: bgGradient,
       borderColor: statusColor.withOpacity(0.3),
-      isImportant: true,
       child: Row(
         children: [
           Container(
@@ -408,7 +400,7 @@ class _CareerTargetsWidget extends StatelessWidget {
     final paceStatus = ctrl.targetPaceStatus;
     final isBehind = paceStatus == 'Behind';
 
-    return GlassCard(
+    return SaasCard(
       borderColor: isBehind 
           ? AppTheme.accent.withOpacity(0.3) 
           : AppTheme.primary.withOpacity(0.15),
@@ -594,9 +586,8 @@ class _ProgressOverviewGrid extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        GlassCard(
+        SaasCard(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          gradient: AppGradients.cardGlow(context),
           borderColor: AppTheme.primary.withOpacity(0.2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -651,7 +642,7 @@ class _NoZeroDayStreakWidget extends StatelessWidget {
     final streak = ctrl.noZeroDayStreak;
     final todaySuccessful = ctrl.checkActivityForDay(DateTime.now());
 
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.all(20),
       borderColor: todaySuccessful ? AppTheme.success.withOpacity(0.3) : AppTheme.textSecondary(context).withOpacity(0.15),
       child: Row(
@@ -820,7 +811,7 @@ class _SkillProgressOverview extends StatelessWidget {
       children: [
         SectionHeader(title: 'Weekly Skill Study Progress'),
         const SizedBox(height: 12),
-        GlassCard(
+        SaasCard(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -896,9 +887,8 @@ class _WeeklyReviewBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: AppGradients.banner,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: AppShadows.glowPurple(context),
+        color: AppTheme.primary,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
@@ -948,8 +938,8 @@ class _WeeklyReviewBanner extends StatelessWidget {
               backgroundColor: Colors.white,
               foregroundColor: AppTheme.primary,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              elevation: 0,
             ),
             child: const Text('Review', style: TextStyle(fontWeight: FontWeight.w800)),
           ),
@@ -968,7 +958,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return SaasCard(
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
       child: Center(
         child: Column(

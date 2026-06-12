@@ -27,10 +27,10 @@ class HabitTile extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: AppTheme.error.withOpacity(isDark ? 0.2 : 0.08),
+          color: AppTheme.danger.withOpacity(isDark ? 0.2 : 0.08),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Icon(Icons.delete_outline, color: AppTheme.error),
+        child: const Icon(Icons.delete_outline, color: AppTheme.danger),
       ),
       onDismissed: (_) => onDelete(),
       child: GestureDetector(
@@ -47,7 +47,7 @@ class HabitTile extends StatelessWidget {
             border: Border.all(
               color: done
                   ? AppTheme.primary.withOpacity(0.3)
-                  : AppTheme.dividerColor(context),
+                  : AppTheme.divider(context),
               width: 1,
             ),
             boxShadow: isDark
@@ -100,8 +100,7 @@ class HabitTile extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  gradient: done ? AppGradientCheckbox.gradient : null,
-                  color: done ? null : Colors.transparent,
+                  color: done ? AppTheme.primary : Colors.transparent,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: done
@@ -122,10 +121,4 @@ class HabitTile extends StatelessWidget {
   }
 }
 
-class AppGradientCheckbox {
-  static const LinearGradient gradient = LinearGradient(
-    colors: [AppTheme.primary, AppTheme.secondary],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-}
+

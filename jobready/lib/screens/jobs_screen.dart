@@ -4,8 +4,8 @@ import '../controllers/habit_controller.dart';
 import '../models/habit_model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
-import '../widgets/glass_card.dart';
-import '../widgets/gradient_button.dart';
+import '../widgets/saas_card.dart';
+import '../widgets/saas_button.dart';
 
 class JobsScreen extends StatelessWidget {
   const JobsScreen({super.key});
@@ -22,8 +22,8 @@ class JobsScreen extends StatelessWidget {
     'applied': AppTheme.primary,
     'interview': AppTheme.warning,
     'offer': AppTheme.success,
-    'rejected': AppTheme.error,
-    'ghosted': AppTheme.textMuted, // updated to use theme constant equivalent
+    'rejected': AppTheme.danger,
+    'ghosted': AppTheme.secondary,
   };
 
   @override
@@ -45,7 +45,7 @@ class JobsScreen extends StatelessWidget {
           return Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: GlassCard(
+              child: SaasCard(
                 padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -66,7 +66,7 @@ class JobsScreen extends StatelessWidget {
                     Text('Tap + to add your first one',
                         style: Theme.of(context).textTheme.bodyMedium),
                     const SizedBox(height: 32),
-                    GradientButton(
+                    SaasButton(
                       text: 'Add application',
                       icon: Icons.add,
                       onPressed: () => _showAddJobSheet(context, ctrl),
@@ -165,7 +165,7 @@ class JobsScreen extends StatelessWidget {
               decoration: const InputDecoration(hintText: 'Job URL (optional)'),
             ),
             const SizedBox(height: 32),
-            GradientButton(
+            SaasButton(
               text: 'Add application',
               width: double.infinity,
               onPressed: () {
@@ -208,7 +208,7 @@ class _JobCard extends StatelessWidget {
     final color = statusColors[job.status] ?? AppTheme.textSecondary(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GlassCard(
+    return SaasCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       borderColor: color.withOpacity(0.3),
@@ -270,7 +270,7 @@ class _JobCard extends StatelessWidget {
                     value: 'delete',
                     child: Text('Delete',
                         style: TextStyle(
-                            color: AppTheme.error, fontSize: 14, fontWeight: FontWeight.w600)),
+                            color: AppTheme.danger, fontSize: 14, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
