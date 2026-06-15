@@ -35,14 +35,17 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: AppTheme.cardColor(context),
       body: Center(
-        child: Lottie.asset(
-          'assets/lottie/rocket.json',
-          width: 250,
-          height: 250,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            return const CircularProgressIndicator(color: AppTheme.primary);
-          },
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.work_outline_rounded,
+            size: 80,
+            color: AppTheme.primary,
+          ),
         ),
       ),
     );

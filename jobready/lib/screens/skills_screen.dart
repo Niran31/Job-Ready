@@ -157,21 +157,13 @@ class SkillsScreen extends StatelessWidget {
                 child: Center(
                   child: Column(
                     children: [
-                      Lottie.asset(
-                        'assets/lottie/books.json',
-                        width: 150,
-                        height: 150,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.bolt_outlined, color: AppTheme.primary, size: 48),
-                          );
-                        },
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.bolt_outlined, color: AppTheme.primary, size: 64),
                       ),
                       const SizedBox(height: 24),
                       Text('No skill logs yet',

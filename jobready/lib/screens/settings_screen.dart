@@ -467,11 +467,11 @@ class _FirebaseSettingsCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: syncService.isSyncing.value
-                    ? Center(
-                        child: Lottie.asset(
-                          'assets/lottie/sync.json',
-                          height: 60,
-                          errorBuilder: (context, error, stackTrace) => const CircularProgressIndicator(),
+                    ? const Center(
+                        child: SizedBox(
+                          height: 48,
+                          width: 48,
+                          child: CircularProgressIndicator(color: AppTheme.primary),
                         ),
                       )
                     : SaasButton(

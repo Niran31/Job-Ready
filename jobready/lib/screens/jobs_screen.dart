@@ -52,21 +52,13 @@ class JobsScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Lottie.asset(
-                      'assets/lottie/search.json',
-                      width: 150,
-                      height: 150,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.work_outline, color: AppTheme.primary, size: 48),
-                        );
-                      },
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.work_outline, color: AppTheme.primary, size: 64),
                     ),
                     const SizedBox(height: 24),
                     Text('No applications yet bro',
