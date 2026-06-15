@@ -19,24 +19,22 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _userName = 'Niran';
+  String _userName = 'User';
 
   @override
   void initState() {
     super.initState();
-    _loadPrefs();
-  }
-
-  Future<void> _loadPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userName = prefs.getString('userName') ?? 'Niran';
-    });
+    final name = SyncService.to.currentUser.value?.displayName;
+    _userName = (name != null && name.isNotEmpty) ? name : 'User';
   }
 
   Future<void> _savePrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userName', _userName);
+    final user = SyncService.to.currentUser.value;
+    if (user != null) {
+      await user.updateDisplayName(_userName);
+      // Force trigger the reactive update in dashboard
+      SyncService.to.currentUser.refresh();
+    }
   }
 
   String _formatTime(int h, int m) {

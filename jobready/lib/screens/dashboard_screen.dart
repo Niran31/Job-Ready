@@ -51,7 +51,7 @@ class DashboardScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Niran 🔥',
+                          '${SyncService.to.currentUser.value?.displayName?.split(' ').first ?? 'User'} 🔥',
                           style: Theme.of(context).textTheme.headlineMedium,
                         ),
                       ],
