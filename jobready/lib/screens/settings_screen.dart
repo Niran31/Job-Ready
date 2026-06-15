@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/habit_controller.dart';
 import '../controllers/notification_controller.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/sync_controller.dart';
 import '../services/sync_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
@@ -462,53 +463,50 @@ class _FirebaseSettingsCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            const SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
-                  child: syncService.isSyncing.value
-                    ? const Center(
-                        child: SizedBox(
-                          height: 48,
-                          width: 48,
-                          child: CircularProgressIndicator(color: AppTheme.primary),
-                        ),
-                      )
-                    : SaasButton(
-                        text: 'Sync Now',
-                        icon: Icons.sync,
-                        onPressed: () async {
-                          if (user != null) {
-                            await syncService.syncAll(user.uid);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Data sync complete! ☁️',
-                                      style: TextStyle(color: AppTheme.textPrimary(context))),
-                                  backgroundColor: AppTheme.cardColor(context),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            }
-                          }
-                        },
-                      ),
+                  child: SaasButton(
+                    text: 'Backup Now',
+                    icon: Icons.cloud_upload,
+                    onPressed: () => SyncController.to.backupNow(),
+                  ),
                 ),
-                const SizedBox(width: 16),
-                OutlinedButton.icon(
-                  onPressed: authController.isLoading.value ? null : () => authController.logout(),
-                  icon: authController.isLoading.value 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.logout, size: 20),
-                  label: const Text('Log out', style: TextStyle(fontWeight: FontWeight.bold)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.accent,
-                    side: const BorderSide(color: AppTheme.accent, width: 1.5),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SaasButton(
+                    text: 'Restore Data',
+                    icon: Icons.cloud_download,
+                    onPressed: () => SyncController.to.restoreData(),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: Obx(() => Text(
+                'Last synced: ${SyncController.to.lastSyncedTime.value}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppTheme.textSecondary(context),
+                ),
+              )),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: authController.isLoading.value ? null : () => authController.logout(),
+                icon: authController.isLoading.value 
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.logout, size: 20),
+                label: const Text('Log out', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.accent,
+                  side: const BorderSide(color: AppTheme.accent, width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
             ),
           ],
         ),

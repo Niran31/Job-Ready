@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'models/habit_model.dart';
+import 'models/sync_queue_model.dart';
 import 'controllers/habit_controller.dart';
 import 'controllers/notification_controller.dart';
 import 'screens/dashboard_screen.dart';
@@ -17,6 +18,7 @@ import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
 import 'screens/auth/forgot_password_screen.dart';
 import 'controllers/auth_controller.dart';
+import 'controllers/sync_controller.dart';
 import 'services/notification_service.dart';
 import 'services/sync_service.dart';
 import 'theme/app_theme.dart';
@@ -55,17 +57,20 @@ void main() async {
   Hive.registerAdapter(JobModelAdapter());
   Hive.registerAdapter(SkillLogModelAdapter());
   Hive.registerAdapter(WeeklyReviewModelAdapter());
+  Hive.registerAdapter(SyncQueueModelAdapter());
   await Hive.openBox<HabitModel>('habits');
   await Hive.openBox<JobModel>('jobs');
   await Hive.openBox<SkillLogModel>('skills');
   await Hive.openBox<WeeklyReviewModel>('weekly_reviews');
+  await Hive.openBox<SyncQueueModel>('sync_queue');
   await Hive.openBox('user_profile');
 
   // Init GetX controller globally
-  Get.put(HabitController());
-  Get.put(NotificationController());
-  Get.put(SyncService());
-  Get.put(AuthController());
+  Get.put(HabitController(), permanent: true);
+  Get.put(NotificationController(), permanent: true);
+  Get.put(SyncService(), permanent: true);
+  Get.put(SyncController(), permanent: true);
+  Get.put(AuthController(), permanent: true);
 
   runApp(const JobReadyApp());
 }

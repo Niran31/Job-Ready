@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../main.dart';
+import '../services/sync_service.dart';
 import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -23,6 +24,9 @@ class _SplashScreenState extends State<SplashScreen> {
       }
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        if (Get.isRegistered<SyncService>()) {
+          SyncService.to.syncAll(user.uid);
+        }
         Get.offAllNamed('/home');
       } else {
         Get.offAllNamed('/login');
