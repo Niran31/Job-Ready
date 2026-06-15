@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/habit_model.dart';
+import 'habit_controller.dart';
 
 class AuthController extends GetxController {
   FirebaseAuth get _auth => FirebaseAuth.instance;
@@ -145,11 +146,10 @@ class AuthController extends GetxController {
     await profileBox.clear();
     
     // As per user requirements "clear Hive data"
-    // Clear all other boxes used by the app
-    await Hive.box<HabitModel>('habits').clear();
-    await Hive.box<JobModel>('jobs').clear();
-    await Hive.box<SkillLogModel>('skills').clear();
-    await Hive.box<WeeklyReviewModel>('weekly_reviews').clear();
+    // Clear all other boxes used by the app and update UI
+    if (Get.isRegistered<HabitController>()) {
+      await Get.find<HabitController>().clearAllData();
+    }
   }
 
   void _showErrorSnackbar(String title, String message) {

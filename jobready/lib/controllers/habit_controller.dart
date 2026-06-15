@@ -143,6 +143,17 @@ class HabitController extends GetxController {
 
   void loadDataFromBoxes() {
     _loadData();
+    if (_habitBox.isEmpty) {
+      _seedDefaultHabitsIfEmpty();
+    }
+  }
+
+  Future<void> clearAllData() async {
+    await _habitBox.clear();
+    await _jobBox.clear();
+    await _skillBox.clear();
+    await _reviewBox.clear();
+    _loadData();
   }
 
   void _seedDefaultHabitsIfEmpty() {
