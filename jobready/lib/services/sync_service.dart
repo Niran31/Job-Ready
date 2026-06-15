@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -24,6 +25,11 @@ class SyncService extends GetxService {
 
   void _checkFirebaseAvailability() {
     try {
+      if (Firebase.apps.isEmpty) {
+        debugPrint('SyncService: Firebase is not initialized. Offline mode active.');
+        isFirebaseAvailable.value = false;
+        return;
+      }
       _auth = FirebaseAuth.instance;
       _firestore = FirebaseFirestore.instance;
       isFirebaseAvailable.value = true;

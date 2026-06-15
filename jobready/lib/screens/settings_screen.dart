@@ -241,7 +241,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
-              'Alarm set for ${_formatTime(_alarmHour, _alarmMinute)} 🔔'),
+              'Alarm set for ${_formatTime(_alarmHour, _alarmMinute)} 🔔',
+              style: TextStyle(color: AppTheme.textPrimary(context))),
           backgroundColor: AppTheme.cardColor(context),
           behavior: SnackBarBehavior.floating,
         ));
@@ -518,7 +519,8 @@ class _GitHubSettingsCardState extends State<_GitHubSettingsCard> {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('GitHub sync completed! checked for today\'s commits 🔔'),
+                            content: Text('GitHub sync completed! checked for today\'s commits 🔔',
+                                style: TextStyle(color: AppTheme.textPrimary(context))),
                             backgroundColor: AppTheme.cardColor(context),
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -575,7 +577,8 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isLogin ? 'Logged in successfully! 🎉' : 'Account created and synced! 🚀'),
+            content: Text(_isLogin ? 'Logged in successfully! 🎉' : 'Account created and synced! 🚀',
+                style: TextStyle(color: AppTheme.textPrimary(context))),
             backgroundColor: AppTheme.cardColor(context),
             behavior: SnackBarBehavior.floating,
           ),
@@ -664,7 +667,8 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('Data sync complete! ☁️'),
+                                    content: Text('Data sync complete! ☁️',
+                                        style: TextStyle(color: AppTheme.textPrimary(context))),
                                     backgroundColor: AppTheme.cardColor(context),
                                     behavior: SnackBarBehavior.floating,
                                   ),
