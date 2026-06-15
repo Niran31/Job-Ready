@@ -640,3 +640,195 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
     );
   }
 }
+
+// ── Reminders Section ────────────────────────────────────────────────────────
+
+class _RemindersSection extends StatelessWidget {
+  final NotificationController ctrl;
+  const _RemindersSection({required this.ctrl});
+
+  String _formatTime(int h, int m) {
+    final period = h >= 12 ? 'PM' : 'AM';
+    final hour = h % 12 == 0 ? 12 : h % 12;
+    final min = m.toString().padLeft(2, '0');
+    return '$hour:$min $period';
+  }
+
+  static const List<String> _daysOfWeek = [
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return SaasCard(
+      padding: EdgeInsets.zero,
+      borderColor: AppTheme.accent.withOpacity(0.3),
+      child: Obx(() => Column(
+        children: [
+          // Daily Habit Reminder
+          _buildReminderTile(
+            context,
+            title: 'Daily Habit Reminder',
+            subtitle: 'Reminds you to log habits',
+            icon: Icons.checklist,
+            enabled: ctrl.habitReminderEnabled.value,
+            timeLabel: _formatTime(ctrl.habitHour.value, ctrl.habitMinute.value),
+            onToggle: (v) => ctrl.updateHabitReminder(v, ctrl.habitHour.value, ctrl.habitMinute.value),
+            onTimeTap: () async {
+              final picked = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay(hour: ctrl.habitHour.value, minute: ctrl.habitMinute.value),
+              );
+              if (picked != null) {
+                ctrl.updateHabitReminder(ctrl.habitReminderEnabled.value, picked.hour, picked.minute);
+              }
+            },
+          ),
+          Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
+
+          // Weekly Review Reminder
+          _buildReminderTile(
+            context,
+            title: 'Weekly Review Reminder',
+            subtitle: 'Reflect on your progress',
+            icon: Icons.auto_graph,
+            enabled: ctrl.weeklyReminderEnabled.value,
+            timeLabel: '${_daysOfWeek[ctrl.weeklyDayOfWeek.value - 1]} at ${_formatTime(ctrl.weeklyHour.value, ctrl.weeklyMinute.value)}',
+            onToggle: (v) => ctrl.updateWeeklyReminder(v, ctrl.weeklyDayOfWeek.value, ctrl.weeklyHour.value, ctrl.weeklyMinute.value),
+            onTimeTap: () async {
+              int tempDay = ctrl.weeklyDayOfWeek.value;
+              final pickedDay = await showDialog<int>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: AppTheme.cardColor(context),
+                  title: Text('Select Day', style: TextStyle(color: AppTheme.textPrimary(context))),
+                  content: DropdownButtonFormField<int>(
+                    value: tempDay,
+                    dropdownColor: AppTheme.cardColor(context),
+                    items: List.generate(7, (i) => DropdownMenuItem(
+                      value: i + 1,
+                      child: Text(_daysOfWeek[i], style: TextStyle(color: AppTheme.textPrimary(context))),
+                    )),
+                    onChanged: (v) => tempDay = v ?? tempDay,
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: TextStyle(color: AppTheme.textSecondary(context)))),
+                    TextButton(onPressed: () => Navigator.pop(ctx, tempDay), child: const Text('Next', style: TextStyle(color: AppTheme.primary))),
+                  ],
+                ),
+              );
+
+              if (pickedDay != null) {
+                final pickedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay(hour: ctrl.weeklyHour.value, minute: ctrl.weeklyMinute.value),
+                );
+                if (pickedTime != null) {
+                  ctrl.updateWeeklyReminder(ctrl.weeklyReminderEnabled.value, pickedDay, pickedTime.hour, pickedTime.minute);
+                }
+              }
+            },
+          ),
+          Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
+
+          // Motivational Streak
+          _buildReminderTile(
+            context,
+            title: 'Morning Motivation',
+            subtitle: 'Daily streak updates',
+            icon: Icons.local_fire_department,
+            enabled: ctrl.streakMotivationEnabled.value,
+            timeLabel: _formatTime(ctrl.streakHour.value, ctrl.streakMinute.value),
+            onToggle: (v) => ctrl.updateStreakMotivation(v, ctrl.streakHour.value, ctrl.streakMinute.value, Get.find<HabitController>().longestCurrentStreak),
+            onTimeTap: () async {
+              final picked = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay(hour: ctrl.streakHour.value, minute: ctrl.streakMinute.value),
+              );
+              if (picked != null) {
+                ctrl.updateStreakMotivation(ctrl.streakMotivationEnabled.value, picked.hour, picked.minute, Get.find<HabitController>().longestCurrentStreak);
+              }
+            },
+          ),
+        ],
+      )),
+    );
+  }
+
+  Widget _buildReminderTile(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool enabled,
+    required String timeLabel,
+    required ValueChanged<bool> onToggle,
+    required VoidCallback onTimeTap,
+  }) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.accent.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: AppTheme.accent, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 4),
+                    Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                  ],
+                ),
+              ),
+              Switch(
+                value: enabled,
+                activeColor: AppTheme.accent,
+                onChanged: onToggle,
+              ),
+            ],
+          ),
+        ),
+        if (enabled)
+          InkWell(
+            onTap: onTimeTap,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Time', style: TextStyle(color: AppTheme.textPrimary(context), fontWeight: FontWeight.w600)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accent.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      timeLabel,
+                      style: const TextStyle(
+                        color: AppTheme.accent,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
