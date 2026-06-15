@@ -5,6 +5,7 @@ import '../models/habit_model.dart';
 import '../services/github_service.dart';
 import '../services/notification_service.dart';
 import '../services/sync_service.dart';
+import 'notification_controller.dart';
 
 class HabitController extends GetxController {
   late Box<HabitModel> _habitBox;
@@ -53,6 +54,7 @@ class HabitController extends GetxController {
     _loadData();
     _seedDefaultHabitsIfEmpty();
     checkGitHubCommits();
+    _refreshStreakNotification();
   }
 
   Future<void> _loadTargets() async {
@@ -168,6 +170,7 @@ class HabitController extends GetxController {
       'category': habit.category,
       'completedDates': habit.completedDates,
     });
+    _refreshStreakNotification();
   }
 
   void addHabit(String name, String emoji, String category) {
@@ -180,6 +183,7 @@ class HabitController extends GetxController {
       'category': category,
       'completedDates': [],
     });
+    _refreshStreakNotification();
   }
 
   void deleteHabit(HabitModel habit) {
@@ -187,6 +191,7 @@ class HabitController extends GetxController {
     habit.delete();
     habits.value = _habitBox.values.toList();
     _deleteSingle('habits', name);
+    _refreshStreakNotification();
   }
 
   // ── Jobs ──────────────────────────────────────────────────────────────────
@@ -698,6 +703,12 @@ class HabitController extends GetxController {
         collectionName: collectionName,
         docId: docId,
       );
+    }
+  }
+
+  void _refreshStreakNotification() {
+    if (Get.isRegistered<NotificationController>()) {
+      Get.find<NotificationController>().refreshStreakNotification(longestCurrentStreak);
     }
   }
 }

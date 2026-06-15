@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/habit_controller.dart';
-import '../services/notification_service.dart';
+import '../controllers/notification_controller.dart';
 import '../services/sync_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
@@ -17,9 +17,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _lazyModeEnabled = true;
-  int _alarmHour = 10;
-  int _alarmMinute = 0;
   String _userName = 'Niran';
 
   @override
@@ -31,26 +28,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _lazyModeEnabled = prefs.getBool('lazyMode') ?? true;
-      _alarmHour = prefs.getInt('alarmHour') ?? 10;
-      _alarmMinute = prefs.getInt('alarmMinute') ?? 0;
       _userName = prefs.getString('userName') ?? 'Niran';
     });
   }
 
   Future<void> _savePrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('lazyMode', _lazyModeEnabled);
-    await prefs.setInt('alarmHour', _alarmHour);
-    await prefs.setInt('alarmMinute', _alarmMinute);
     await prefs.setString('userName', _userName);
-
-    if (_lazyModeEnabled) {
-      await NotificationService.scheduleDailyCheckIn(
-          hour: _alarmHour, minute: _alarmMinute);
-    } else {
-      await NotificationService.cancelCheckIn();
-    }
   }
 
   String _formatTime(int h, int m) {
@@ -89,98 +73,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 32),
 
-          // Lazy mode section
-          SectionHeader(title: '⚠️ Lazy mode blocker'),
+          // Reminders section
+          SectionHeader(title: '🔔 Reminders & Notifications'),
           const SizedBox(height: 12),
-          SaasCard(
-            padding: EdgeInsets.zero,
-            borderColor: _lazyModeEnabled
-                ? AppTheme.accent.withOpacity(0.3)
-                : AppTheme.textSecondary(context).withOpacity(0.1),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accent.withOpacity(0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.alarm, color: AppTheme.accent, size: 24),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Daily check-in alarm',
-                                style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: 4),
-                            Text(
-                              'If you haven\'t logged by this time — BUZZ!',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Switch(
-                        value: _lazyModeEnabled,
-                        activeColor: AppTheme.accent,
-                        onChanged: (v) {
-                          setState(() => _lazyModeEnabled = v);
-                          _savePrefs();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                if (_lazyModeEnabled) ...[
-                  Divider(color: isDark ? AppTheme.dividerDark : AppTheme.dividerLight, height: 1),
-                  InkWell(
-                    onTap: () => _pickAlarmTime(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Alarm time',
-                              style: TextStyle(
-                                  color: AppTheme.textPrimary(context),
-                                  fontWeight: FontWeight.w600)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accent.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              _formatTime(_alarmHour, _alarmMinute),
-                              style: const TextStyle(
-                                color: AppTheme.accent,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'This alarm fires every day at your set time if you haven\'t checked off any habits. Stay accountable bro! 🔥',
-            style: TextStyle(
-                color: AppTheme.textSecondary(context),
-                fontSize: 13,
-                height: 1.5),
-          ),
+          _RemindersSection(ctrl: Get.find<NotificationController>()),
 
           const SizedBox(height: 40),
 
@@ -219,35 +115,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
-  }
-
-  void _pickAlarmTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: _alarmHour, minute: _alarmMinute),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(primary: AppTheme.accent),
-        ),
-        child: child!,
-      ),
-    );
-    if (picked != null) {
-      setState(() {
-        _alarmHour = picked.hour;
-        _alarmMinute = picked.minute;
-      });
-      await _savePrefs();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              'Alarm set for ${_formatTime(_alarmHour, _alarmMinute)} 🔔',
-              style: TextStyle(color: AppTheme.textPrimary(context))),
-          backgroundColor: AppTheme.cardColor(context),
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
-    }
   }
 
   void _showNameDialog() {

@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'models/habit_model.dart';
 import 'controllers/habit_controller.dart';
+import 'controllers/notification_controller.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/jobs_screen.dart';
 import 'screens/skills_screen.dart';
@@ -51,6 +52,7 @@ void main() async {
 
   // Init GetX controller globally
   Get.put(HabitController());
+  Get.put(NotificationController());
   Get.put(SyncService());
 
   runApp(const JobReadyApp());

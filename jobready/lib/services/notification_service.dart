@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -6,6 +7,10 @@ class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
 
+  static const int _habitId = 1;
+  static const int _weeklyId = 2;
+  static const int _streakId = 3;
+
   static Future<void> init() async {
     if (_initialized) return;
     tz.initializeTimeZones();
@@ -13,24 +18,35 @@ class NotificationService {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
     await _plugin.initialize(settings);
+
+    // Request permissions for Android 13+
+    if (Platform.isAndroid) {
+      final androidImplementation =
+          _plugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      await androidImplementation?.requestNotificationsPermission();
+      await androidImplementation?.requestExactAlarmsPermission();
+    }
+
     _initialized = true;
   }
 
-  /// Schedule daily lazy-mode alarm at [hour]:[minute]
-  static Future<void> scheduleDailyCheckIn({
-    int hour = 10,
-    int minute = 0,
+  // ── Daily Habit Reminder ───────────────────────────────────────────────────
+
+  static Future<void> scheduleDailyHabitReminder({
+    required int hour,
+    required int minute,
   }) async {
     await _plugin.zonedSchedule(
-      1,
-      '⚠️ Grind check-in',
-      "You haven't checked in today. Don't let today be wasted bro!",
+      _habitId,
+      '🎯 Time to grind!',
+      "Don't let today be a zero day. Log your habits!",
       _nextInstanceOfTime(hour, minute),
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'lazy_mode',
-          'Lazy Mode Blocker',
-          channelDescription: 'Daily accountability check-in',
+          'habit_reminder_channel',
+          'Habit Reminders',
+          channelDescription: 'Daily reminder to log your habits',
           importance: Importance.high,
           priority: Priority.high,
           playSound: true,
@@ -39,16 +55,86 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
+      matchDateTimeComponents: DateTimeComponents.time, // Repeats daily
     );
   }
 
-  /// Cancel the daily check-in
-  static Future<void> cancelCheckIn() async {
-    await _plugin.cancel(1);
+  static Future<void> cancelDailyHabitReminder() async {
+    await _plugin.cancel(_habitId);
   }
 
-  /// Show immediate motivational notification
+  // ── Weekly Review Reminder ─────────────────────────────────────────────────
+
+  static Future<void> scheduleWeeklyReviewReminder({
+    required int dayOfWeek, // 1 = Mon, 7 = Sun
+    required int hour,
+    required int minute,
+  }) async {
+    await _plugin.zonedSchedule(
+      _weeklyId,
+      '📊 Weekly Review Time',
+      "Reflect on your progress and plan the upcoming week.",
+      _nextInstanceOfWeekdayTime(dayOfWeek, hour, minute),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'weekly_review_channel',
+          'Weekly Review Reminders',
+          channelDescription: 'Reminder to complete your weekly review',
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: true,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime, // Repeats weekly
+    );
+  }
+
+  static Future<void> cancelWeeklyReviewReminder() async {
+    await _plugin.cancel(_weeklyId);
+  }
+
+  // ── Motivational Streak Reminder ───────────────────────────────────────────
+
+  static Future<void> scheduleStreakMotivation({
+    required int hour,
+    required int minute,
+    required int streakCount,
+  }) async {
+    final message = streakCount > 0
+        ? "You're on a $streakCount day streak! Keep the momentum going! 🔥"
+        : "Every great streak starts with day 1. Let's get it today! 💪";
+
+    await _plugin.zonedSchedule(
+      _streakId,
+      '🚀 Keep pushing!',
+      message,
+      _nextInstanceOfTime(hour, minute),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'streak_motivation_channel',
+          'Streak Motivation',
+          channelDescription: 'Daily motivation and streak updates',
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: true,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time, // Repeats daily
+    );
+  }
+
+  static Future<void> cancelStreakMotivation() async {
+    await _plugin.cancel(_streakId);
+  }
+
+  // ── Immediate Generic Motivation ───────────────────────────────────────────
+
   static Future<void> showMotivation(String message) async {
     await _plugin.show(
       0,
@@ -65,11 +151,22 @@ class NotificationService {
     );
   }
 
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
   static tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled =
         tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
     if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    return scheduled;
+  }
+
+  static tz.TZDateTime _nextInstanceOfWeekdayTime(
+      int dayOfWeek, int hour, int minute) {
+    tz.TZDateTime scheduled = _nextInstanceOfTime(hour, minute);
+    while (scheduled.weekday != dayOfWeek) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
     return scheduled;
