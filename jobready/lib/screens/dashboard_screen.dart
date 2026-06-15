@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import '../controllers/habit_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/stat_card.dart';
@@ -169,7 +170,13 @@ class DashboardScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
                     child: HabitTile(
                       habit: ctrl.habits[i],
-                      onToggle: () => ctrl.toggleHabit(ctrl.habits[i]),
+                      onToggle: () {
+                        final wasDone = ctrl.habits[i].isCompletedToday();
+                        ctrl.toggleHabit(ctrl.habits[i]);
+                        if (!wasDone) {
+                          _showCelebrationOverlay(context);
+                        }
+                      },
                       onDelete: () => ctrl.deleteHabit(ctrl.habits[i]),
                     ),
                   ),
@@ -195,6 +202,38 @@ class DashboardScreen extends StatelessWidget {
     if (h < 12) return 'Good morning,';
     if (h < 17) return 'Good afternoon,';
     return 'Good evening,';
+  }
+
+  void _showCelebrationOverlay(BuildContext context) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: IgnorePointer(
+          child: Center(
+            child: Lottie.asset(
+              'assets/lottie/confetti.json',
+              repeat: false,
+              fit: BoxFit.contain,
+              width: 300,
+              height: 300,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(entry);
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (entry.mounted) {
+        entry.remove();
+      }
+    });
   }
 
   void _showAddHabitSheet(BuildContext context, HabitController ctrl) {

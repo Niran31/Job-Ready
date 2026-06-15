@@ -26,7 +26,7 @@ dependencies:
   fl_chart: ^0.68.0
   
   # Animations
-  lottie: ^3.0.0
+  lottie: ^3.3.3
   
   # Date & time utils
   intl: ^0.19.0
@@ -51,3 +51,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/animations/
+    - assets/lottie/

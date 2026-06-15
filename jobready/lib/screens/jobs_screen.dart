@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import '../controllers/habit_controller.dart';
 import '../models/habit_model.dart';
 import '../theme/app_theme.dart';
@@ -51,13 +52,21 @@ class JobsScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.work_outline, color: AppTheme.primary, size: 48),
+                    Lottie.asset(
+                      'assets/lottie/search.json',
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.work_outline, color: AppTheme.primary, size: 48),
+                        );
+                      },
                     ),
                     const SizedBox(height: 24),
                     Text('No applications yet bro',

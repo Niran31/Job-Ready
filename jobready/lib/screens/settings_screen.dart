@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/habit_controller.dart';
 import '../controllers/notification_controller.dart';
@@ -521,43 +522,50 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
                 ],
               ),
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: SaasButton(
-                      text: syncService.isSyncing.value ? 'Syncing...' : 'Sync Now',
-                      icon: Icons.sync,
-                      onPressed: syncService.isSyncing.value
-                          ? () {}
-                          : () async {
-                              await syncService.syncAll(user.uid);
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Data sync complete! ☁️',
-                                        style: TextStyle(color: AppTheme.textPrimary(context))),
-                                    backgroundColor: AppTheme.cardColor(context),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              }
-                            },
-                    ),
+              if (syncService.isSyncing.value)
+                Center(
+                  child: Lottie.asset(
+                    'assets/lottie/sync.json',
+                    height: 60,
+                    errorBuilder: (context, error, stackTrace) => const CircularProgressIndicator(),
                   ),
-                  const SizedBox(width: 16),
-                  OutlinedButton.icon(
-                    onPressed: () => syncService.logout(),
-                    icon: const Icon(Icons.logout, size: 20),
-                    label: const Text('Log out', style: TextStyle(fontWeight: FontWeight.bold)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.accent,
-                      side: const BorderSide(color: AppTheme.accent, width: 1.5),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(
+                      child: SaasButton(
+                        text: 'Sync Now',
+                        icon: Icons.sync,
+                        onPressed: () async {
+                                await syncService.syncAll(user.uid);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Data sync complete! ☁️',
+                                          style: TextStyle(color: AppTheme.textPrimary(context))),
+                                      backgroundColor: AppTheme.cardColor(context),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 16),
+                    OutlinedButton.icon(
+                      onPressed: () => syncService.logout(),
+                      icon: const Icon(Icons.logout, size: 20),
+                      label: const Text('Log out', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.accent,
+                        side: const BorderSide(color: AppTheme.accent, width: 1.5),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         );
@@ -598,11 +606,20 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
                 validator: (val) => val == null || val.length < 6 ? 'Password must be at least 6 characters' : null,
               ),
               const SizedBox(height: 24),
-              SaasButton(
-                text: _isLogin ? 'Sign In' : 'Register',
-                width: double.infinity,
-                onPressed: _loading ? () {} : _submit,
-              ),
+              if (_loading)
+                Center(
+                  child: Lottie.asset(
+                    'assets/lottie/sync.json',
+                    height: 60,
+                    errorBuilder: (context, error, stackTrace) => const CircularProgressIndicator(),
+                  ),
+                )
+              else
+                SaasButton(
+                  text: _isLogin ? 'Sign In' : 'Register',
+                  width: double.infinity,
+                  onPressed: _submit,
+                ),
               const SizedBox(height: 16),
               Center(
                 child: TextButton(

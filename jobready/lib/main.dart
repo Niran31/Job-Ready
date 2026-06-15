@@ -12,6 +12,7 @@ import 'screens/jobs_screen.dart';
 import 'screens/skills_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 import 'services/sync_service.dart';
 import 'theme/app_theme.dart';
@@ -69,7 +70,7 @@ class JobReadyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light, // Default to light mode, can be made dynamic later
-      home: const MainNavigation(),
+      home: const SplashScreen(),
     );
   }
 }
