@@ -13,9 +13,16 @@ import 'screens/skills_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/signup_screen.dart';
+import 'screens/auth/forgot_password_screen.dart';
+import 'controllers/auth_controller.dart';
 import 'services/notification_service.dart';
 import 'services/sync_service.dart';
 import 'theme/app_theme.dart';
+import 'firebase_options.dart';
+
+bool firebaseConfigured = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,9 +35,11 @@ void main() async {
       // to avoid crashing the app.
       debugPrint('Firebase on Web requires firebase_options.dart config. Currently running without Firebase on Web.');
     } else {
-      // Try initializing. On mobile, it will load GoogleServices config.
-      await Firebase.initializeApp();
-      firebaseAvailable = true;
+      // Initialize with generated options
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      firebaseConfigured = true;
       debugPrint('Firebase initialized successfully.');
     }
   } catch (e) {
@@ -50,11 +59,13 @@ void main() async {
   await Hive.openBox<JobModel>('jobs');
   await Hive.openBox<SkillLogModel>('skills');
   await Hive.openBox<WeeklyReviewModel>('weekly_reviews');
+  await Hive.openBox('user_profile');
 
   // Init GetX controller globally
   Get.put(HabitController());
   Get.put(NotificationController());
   Get.put(SyncService());
+  Get.put(AuthController());
 
   runApp(const JobReadyApp());
 }
@@ -70,7 +81,14 @@ class JobReadyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light, // Default to light mode, can be made dynamic later
-      home: const SplashScreen(),
+      initialRoute: '/',
+      getPages: [
+        GetPage(name: '/', page: () => const SplashScreen()),
+        GetPage(name: '/login', page: () => const LoginScreen()),
+        GetPage(name: '/signup', page: () => const SignupScreen()),
+        GetPage(name: '/forgot_password', page: () => const ForgotPasswordScreen()),
+        GetPage(name: '/home', page: () => const MainNavigation()),
+      ],
     );
   }
 }

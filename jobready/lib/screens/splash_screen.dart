@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../main.dart';
 import '../theme/app_theme.dart';
 
@@ -16,7 +17,16 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 2500), () {
-      Get.offAll(() => const MainNavigation());
+      if (!firebaseConfigured) {
+        Get.offAllNamed('/home');
+        return;
+      }
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        Get.offAllNamed('/home');
+      } else {
+        Get.offAllNamed('/login');
+      }
     });
   }
 

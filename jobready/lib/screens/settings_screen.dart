@@ -4,6 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/habit_controller.dart';
 import '../controllers/notification_controller.dart';
+import '../controllers/auth_controller.dart';
 import '../services/sync_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
@@ -405,67 +406,8 @@ class _GitHubSettingsCardState extends State<_GitHubSettingsCard> {
 
 // ── Firebase Settings Widget ─────────────────────────────────────────────────
 
-class _FirebaseSettingsCard extends StatefulWidget {
+class _FirebaseSettingsCard extends StatelessWidget {
   const _FirebaseSettingsCard();
-
-  @override
-  State<_FirebaseSettingsCard> createState() => _FirebaseSettingsCardState();
-}
-
-class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
-  final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _isLogin = true;
-  bool _loading = false;
-
-  @override
-  void dispose() {
-    _emailCtrl.dispose();
-    _passwordCtrl.dispose();
-    super.dispose();
-  }
-
-  void _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _loading = true);
-    final syncService = SyncService.to;
-
-    try {
-      if (_isLogin) {
-        await syncService.login(_emailCtrl.text.trim(), _passwordCtrl.text);
-      } else {
-        await syncService.signUp(_emailCtrl.text.trim(), _passwordCtrl.text);
-      }
-
-      _emailCtrl.clear();
-      _passwordCtrl.clear();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isLogin ? 'Logged in successfully! 🎉' : 'Account created and synced! 🚀',
-                style: TextStyle(color: AppTheme.textPrimary(context))),
-            backgroundColor: AppTheme.cardColor(context),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Auth error: ${e.toString().replaceAll(RegExp(r'\[.*?\]'), '')}'),
-            backgroundColor: AppTheme.accent,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -474,6 +416,7 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
     }
 
     final syncService = SyncService.to;
+    final authController = Get.find<AuthController>();
 
     return Obx(() {
       if (!syncService.isFirebaseAvailable.value) {
@@ -485,153 +428,91 @@ class _FirebaseSettingsCardState extends State<_FirebaseSettingsCard> {
 
       final user = syncService.currentUser.value;
 
-      if (user != null) {
-        return SaasCard(
-          padding: const EdgeInsets.all(24),
-          borderColor: AppTheme.success.withOpacity(0.3),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.success.withOpacity(0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.cloud_done, color: AppTheme.success, size: 24),
+      return SaasCard(
+        padding: const EdgeInsets.all(24),
+        borderColor: AppTheme.success.withOpacity(0.3),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.success.withOpacity(0.15),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Cloud Backup Active',
-                          style: Theme.of(context).textTheme.titleMedium,
+                  child: const Icon(Icons.cloud_done, color: AppTheme.success, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cloud Backup Active',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        user?.email ?? 'Authenticated',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: syncService.isSyncing.value
+                    ? Center(
+                        child: Lottie.asset(
+                          'assets/lottie/sync.json',
+                          height: 60,
+                          errorBuilder: (context, error, stackTrace) => const CircularProgressIndicator(),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user.email ?? 'Authenticated',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              if (syncService.isSyncing.value)
-                Center(
-                  child: Lottie.asset(
-                    'assets/lottie/sync.json',
-                    height: 60,
-                    errorBuilder: (context, error, stackTrace) => const CircularProgressIndicator(),
-                  ),
-                )
-              else
-                Row(
-                  children: [
-                    Expanded(
-                      child: SaasButton(
+                      )
+                    : SaasButton(
                         text: 'Sync Now',
                         icon: Icons.sync,
                         onPressed: () async {
-                                await syncService.syncAll(user.uid);
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Data sync complete! ☁️',
-                                          style: TextStyle(color: AppTheme.textPrimary(context))),
-                                      backgroundColor: AppTheme.cardColor(context),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                }
-                              },
+                          if (user != null) {
+                            await syncService.syncAll(user.uid);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Data sync complete! ☁️',
+                                      style: TextStyle(color: AppTheme.textPrimary(context))),
+                                  backgroundColor: AppTheme.cardColor(context),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          }
+                        },
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    OutlinedButton.icon(
-                      onPressed: () => syncService.logout(),
-                      icon: const Icon(Icons.logout, size: 20),
-                      label: const Text('Log out', style: TextStyle(fontWeight: FontWeight.bold)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.accent,
-                        side: const BorderSide(color: AppTheme.accent, width: 1.5),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                    ),
-                  ],
                 ),
-            ],
-          ),
-        );
-      }
-
-      return SaasCard(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _isLogin ? 'Sign in to Cloud Sync' : 'Create Sync Account',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _emailCtrl,
-                style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 14),
-                decoration: InputDecoration(
-                  labelText: 'Email Address',
-                  labelStyle: TextStyle(color: AppTheme.textSecondary(context), fontSize: 12),
-                  prefixIcon: Icon(Icons.email, color: AppTheme.textSecondary(context), size: 20),
-                ),
-                validator: (val) => val == null || !val.contains('@') ? 'Enter a valid email' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordCtrl,
-                obscureText: true,
-                style: TextStyle(color: AppTheme.textPrimary(context), fontSize: 14),
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: AppTheme.textSecondary(context), fontSize: 12),
-                  prefixIcon: Icon(Icons.lock, color: AppTheme.textSecondary(context), size: 20),
-                ),
-                validator: (val) => val == null || val.length < 6 ? 'Password must be at least 6 characters' : null,
-              ),
-              const SizedBox(height: 24),
-              if (_loading)
-                Center(
-                  child: Lottie.asset(
-                    'assets/lottie/sync.json',
-                    height: 60,
-                    errorBuilder: (context, error, stackTrace) => const CircularProgressIndicator(),
-                  ),
-                )
-              else
-                SaasButton(
-                  text: _isLogin ? 'Sign In' : 'Register',
-                  width: double.infinity,
-                  onPressed: _submit,
-                ),
-              const SizedBox(height: 16),
-              Center(
-                child: TextButton(
-                  onPressed: () => setState(() => _isLogin = !_isLogin),
-                  child: Text(
-                    _isLogin ? 'Don\'t have an account? Register' : 'Already have an account? Sign In',
-                    style: const TextStyle(color: AppTheme.secondary, fontSize: 13, fontWeight: FontWeight.bold),
+                const SizedBox(width: 16),
+                OutlinedButton.icon(
+                  onPressed: authController.isLoading.value ? null : () => authController.logout(),
+                  icon: authController.isLoading.value 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.logout, size: 20),
+                  label: const Text('Log out', style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.accent,
+                    side: const BorderSide(color: AppTheme.accent, width: 1.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       );
     });
