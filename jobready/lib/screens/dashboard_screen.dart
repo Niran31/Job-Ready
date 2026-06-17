@@ -11,6 +11,7 @@ import '../widgets/saas_card.dart';
 import '../widgets/saas_button.dart';
 import '../services/sync_service.dart';
 import 'resume_screen.dart';
+import 'interview_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -111,6 +112,14 @@ class DashboardScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                 child: _ResumeAnalyzerCard(),
+              ),
+            ),
+
+            // ── Interview Coach Card ─────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                child: const _InterviewCoachCard(),
               ),
             ),
 
@@ -634,6 +643,61 @@ class _ResumeAnalyzerCard extends StatelessWidget {
               ),
             ),
             const Icon(Icons.arrow_forward_ios_rounded, color: Colors.indigo, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Interview Coach Card Widget ──────────────────────────────────────────────
+
+class _InterviewCoachCard extends StatelessWidget {
+  const _InterviewCoachCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(() => const InterviewScreen()),
+      child: SaasCard(
+        padding: const EdgeInsets.all(20),
+        borderColor: AppTheme.primary.withOpacity(0.3),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.mic_none_outlined, color: AppTheme.primary, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Interview Coach',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Practice with AI-generated questions',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary(context),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.primary, size: 16),
           ],
         ),
       ),
