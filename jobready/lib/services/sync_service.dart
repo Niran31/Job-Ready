@@ -65,6 +65,8 @@ class SyncService extends GetxService {
         } else {
           _cancelFirestoreListeners();
         }
+      }, onError: (e) {
+        debugPrint('SyncService: Auth state listener error: $e');
       });
     } catch (e) {
       debugPrint('SyncService: Firebase is not available. Offline mode active: $e');
@@ -202,6 +204,8 @@ class SyncService extends GetxService {
       if (updatedLocal) {
         ctrl.loadDataFromBoxes();
       }
+    }, onError: (error) {
+      debugPrint('SyncService: Error listening to $collectionName: $error');
     });
 
     _firestoreSubs.add(sub);
