@@ -10,6 +10,7 @@ import '../widgets/weekly_review_dialog.dart';
 import '../widgets/saas_card.dart';
 import '../widgets/saas_button.dart';
 import '../services/sync_service.dart';
+import 'resume_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -102,6 +103,14 @@ class DashboardScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                 child: _CareerTargetsWidget(ctrl: ctrl),
+              ),
+            ),
+
+            // ── Resume Analyzer Card ─────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                child: _ResumeAnalyzerCard(),
               ),
             ),
 
@@ -573,6 +582,61 @@ class _ProgressBarRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Resume Analyzer Card Widget ──────────────────────────────────────────────
+
+class _ResumeAnalyzerCard extends StatelessWidget {
+  const _ResumeAnalyzerCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(() => const ResumeScreen()),
+      child: SaasCard(
+        padding: const EdgeInsets.all(20),
+        borderColor: Colors.indigo.withOpacity(0.3),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.indigo.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.description_outlined, color: Colors.indigo, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Resume Analyzer',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Check ATS score & keyword gaps',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary(context),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.indigo, size: 16),
+          ],
+        ),
+      ),
     );
   }
 }
