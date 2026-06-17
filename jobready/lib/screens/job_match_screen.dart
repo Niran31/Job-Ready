@@ -178,18 +178,6 @@ class JobMatchScreen extends StatelessWidget {
           ),
           onChanged: (val) => controller.jobDescription.value = val,
         ),
-        Obx(() {
-          if (controller.errorMessage.value.isNotEmpty) {
-            return Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Text(
-                controller.errorMessage.value,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        }),
       ],
     );
   }

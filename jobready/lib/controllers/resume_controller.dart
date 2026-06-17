@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
@@ -22,6 +21,11 @@ class ResumeController extends GetxController {
     super.onInit();
     // Load last result from Hive if available
     _loadLastResult();
+    
+    // Reset result when resumeText changes
+    ever(resumeText, (_) {
+      result.value = null;
+    });
   }
 
   void _loadLastResult() {
@@ -41,6 +45,7 @@ class ResumeController extends GetxController {
   void toggleInputMode(String mode) {
     inputMode.value = mode;
     errorMessage.value = '';
+    result.value = null;
     
     // Clear state when switching modes
     if (mode == 'paste') {
@@ -59,6 +64,9 @@ class ResumeController extends GetxController {
 
       if (fileResult != null) {
         PlatformFile file = fileResult.files.first;
+        if (pickedFileName.value != file.name) {
+          result.value = null;
+        }
         pickedFileName.value = file.name;
 
         if (kIsWeb) {
@@ -67,7 +75,7 @@ class ResumeController extends GetxController {
           errorMessage.value = 'PDF parsing on Web might be limited.';
         } else {
           if (file.path != null) {
-            String text = await ReadPdfText.getPDFtext(file.path!) ?? '';
+            String text = await ReadPdfText.getPDFtext(file.path!);
             if (text.trim().isEmpty) {
               errorMessage.value = 'Could not extract text from this PDF. It might be scanned or image-based.';
             } else {
@@ -78,7 +86,14 @@ class ResumeController extends GetxController {
       }
     } catch (e) {
       debugPrint('Error picking PDF: $e');
-      errorMessage.value = 'Failed to pick or read PDF file.';
+      final errorString = e.toString();
+      final hasConnError = [
+        'SocketException', 'SocketFailed', 'Failed host lookup',
+        'No address associated', 'errno = 7', 'OSError'
+      ].any((s) => errorString.contains(s));
+      errorMessage.value = hasConnError
+          ? "No internet connection. Please check your network and try again."
+          : "Something went wrong. Please try again.";
     }
   }
 
@@ -102,11 +117,21 @@ class ResumeController extends GetxController {
       
     } catch (e) {
       debugPrint('Analyze Error: $e');
-      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      final errorString = e.toString();
+      final hasConnError = [
+        'SocketException', 'SocketFailed', 'Failed host lookup',
+        'No address associated', 'errno = 7', 'OSError'
+      ].any((s) => errorString.contains(s));
+      
+      final userFriendlyMsg = hasConnError
+          ? "No internet connection. Please check your network and try again."
+          : "Something went wrong. Please try again.";
+          
+      errorMessage.value = userFriendlyMsg;
       
       Get.snackbar(
         'Analysis Failed',
-        errorMessage.value,
+        userFriendlyMsg,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {

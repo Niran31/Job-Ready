@@ -141,10 +141,20 @@ class InterviewController extends GetxController {
       questionsGenerated.value = true;
     } catch (e) {
       debugPrint('Error generating questions: $e');
-      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      final errorString = e.toString();
+      final hasConnError = [
+        'SocketException', 'SocketFailed', 'Failed host lookup',
+        'No address associated', 'errno = 7', 'OSError'
+      ].any((s) => errorString.contains(s));
+
+      final userFriendlyMsg = hasConnError
+          ? "No internet connection. Please check your network and try again."
+          : "Something went wrong. Please try again.";
+
+      errorMessage.value = userFriendlyMsg;
       Get.snackbar(
         'Generation Failed',
-        errorMessage.value,
+        userFriendlyMsg,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
@@ -208,10 +218,20 @@ class InterviewController extends GetxController {
       result.value = sessionResult;
     } catch (e) {
       debugPrint('Error evaluating answers: $e');
-      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      final errorString = e.toString();
+      final hasConnError = [
+        'SocketException', 'SocketFailed', 'Failed host lookup',
+        'No address associated', 'errno = 7', 'OSError'
+      ].any((s) => errorString.contains(s));
+
+      final userFriendlyMsg = hasConnError
+          ? "No internet connection. Please check your network and try again."
+          : "Something went wrong. Please try again.";
+
+      errorMessage.value = userFriendlyMsg;
       Get.snackbar(
         'Evaluation Failed',
-        errorMessage.value,
+        userFriendlyMsg,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {

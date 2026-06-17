@@ -48,7 +48,6 @@ class _InterviewScreenState extends State<InterviewScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<InterviewController>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -243,13 +242,6 @@ class _InterviewScreenState extends State<InterviewScreen> {
         ],
         const SizedBox(height: 28),
 
-        if (controller.errorMessage.value.isNotEmpty) ...[
-          Text(
-            controller.errorMessage.value,
-            style: const TextStyle(color: Colors.red, fontSize: 13),
-          ),
-          const SizedBox(height: 12),
-        ],
 
         ElevatedButton(
           onPressed: controller.isGenerating.value ? null : controller.generateQuestions,

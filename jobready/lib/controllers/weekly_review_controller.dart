@@ -87,9 +87,19 @@ class WeeklyReviewController extends GetxController {
       );
     } catch (e) {
       debugPrint('AI Weekly Review Error: $e');
+      final errorString = e.toString();
+      final hasConnError = [
+        'SocketException', 'SocketFailed', 'Failed host lookup',
+        'No address associated', 'errno = 7', 'OSError'
+      ].any((s) => errorString.contains(s));
+
+      final userFriendlyMsg = hasConnError
+          ? "No internet connection. Please check your network and try again."
+          : "Something went wrong. Please try again.";
+
       Get.snackbar(
         'AI Generation Failed',
-        e.toString().replaceAll('Exception: ', ''),
+        userFriendlyMsg,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {

@@ -132,11 +132,21 @@ class JobMatchController extends GetxController {
       result.value = generatedResult;
     } catch (e) {
       debugPrint('Job Match Error: $e');
-      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      final errorString = e.toString();
+      final hasConnError = [
+        'SocketException', 'SocketFailed', 'Failed host lookup',
+        'No address associated', 'errno = 7', 'OSError'
+      ].any((s) => errorString.contains(s));
+
+      final userFriendlyMsg = hasConnError
+          ? "No internet connection. Please check your network and try again."
+          : "Something went wrong. Please try again.";
+
+      errorMessage.value = userFriendlyMsg;
 
       Get.snackbar(
         'Match Analysis Failed',
-        errorMessage.value,
+        userFriendlyMsg,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
