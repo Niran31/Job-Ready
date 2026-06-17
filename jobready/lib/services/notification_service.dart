@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -15,6 +14,10 @@ class NotificationService {
 
   static Future<void> init() async {
     if (_initialized) return;
+    if (kIsWeb) {
+      _initialized = true;
+      return;
+    }
     tz.initializeTimeZones();
     try {
       final tzInfo = await FlutterTimezone.getLocalTimezone();
@@ -28,7 +31,7 @@ class NotificationService {
     await _plugin.initialize(settings);
 
     // Request permissions for Android 13+
-    if (Platform.isAndroid) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       final androidImplementation =
           _plugin.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
@@ -45,6 +48,7 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
+    if (kIsWeb) return;
     await _plugin.zonedSchedule(
       _habitId,
       '🎯 Time to grind!',
@@ -68,6 +72,7 @@ class NotificationService {
   }
 
   static Future<void> cancelDailyHabitReminder() async {
+    if (kIsWeb) return;
     await _plugin.cancel(_habitId);
   }
 
@@ -78,6 +83,7 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
+    if (kIsWeb) return;
     await _plugin.zonedSchedule(
       _weeklyId,
       '📊 Weekly Review Time',
@@ -101,6 +107,7 @@ class NotificationService {
   }
 
   static Future<void> cancelWeeklyReviewReminder() async {
+    if (kIsWeb) return;
     await _plugin.cancel(_weeklyId);
   }
 
@@ -111,6 +118,7 @@ class NotificationService {
     required int minute,
     required int streakCount,
   }) async {
+    if (kIsWeb) return;
     final message = streakCount > 0
         ? "You're on a $streakCount day streak! Keep the momentum going! 🔥"
         : "Every great streak starts with day 1. Let's get it today! 💪";
@@ -138,12 +146,14 @@ class NotificationService {
   }
 
   static Future<void> cancelStreakMotivation() async {
+    if (kIsWeb) return;
     await _plugin.cancel(_streakId);
   }
 
   // ── Immediate Generic Motivation ───────────────────────────────────────────
 
   static Future<void> showMotivation(String message) async {
+    if (kIsWeb) return;
     await _plugin.show(
       0,
       '🔥 JobReady',

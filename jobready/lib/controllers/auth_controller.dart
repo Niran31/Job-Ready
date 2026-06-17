@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/habit_model.dart';
 import 'habit_controller.dart';
 
 class AuthController extends GetxController {
   FirebaseAuth get _auth => FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: kIsWeb ? 'dummy-client-id.apps.googleusercontent.com' : null,
+  );
   
   final RxBool isLoading = false.obs;
 
