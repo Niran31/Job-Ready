@@ -169,6 +169,27 @@ class NotificationService {
     );
   }
 
+  // ── Smart Reminder Nudge Notification ──────────────────────────────────────
+
+  static Future<void> showInstantNotification(String title, String body) async {
+    if (kIsWeb) return;
+    await _plugin.show(
+      99,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'smart_reminder_channel',
+          'Smart Reminders',
+          channelDescription: 'Smart job application nudge reminders',
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: true,
+        ),
+      ),
+    );
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   static tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {

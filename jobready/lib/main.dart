@@ -24,8 +24,10 @@ import 'controllers/auth_controller.dart';
 import 'controllers/sync_controller.dart';
 import 'services/notification_service.dart';
 import 'services/sync_service.dart';
+import 'services/smart_reminder_service.dart';
 import 'theme/app_theme.dart';
 import 'firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 bool firebaseConfigured = false;
 
@@ -116,6 +118,26 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _triggerDailySmartReminder();
+  }
+
+  Future<void> _triggerDailySmartReminder() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final todayStr = DateTime.now().toIso8601String().split('T')[0];
+      final lastDate = prefs.getString('last_reminder_date');
+      if (lastDate != todayStr) {
+        await SmartReminderService().scheduleSmartReminder();
+        await prefs.setString('last_reminder_date', todayStr);
+      }
+    } catch (e) {
+      debugPrint('Error triggering daily smart reminder: $e');
+    }
+  }
 
   final List<Widget> _screens = const [
     DashboardScreen(),

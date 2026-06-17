@@ -12,6 +12,7 @@ import '../widgets/saas_button.dart';
 import '../services/sync_service.dart';
 import 'resume_screen.dart';
 import 'interview_screen.dart';
+import '../services/smart_reminder_service.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -471,20 +472,50 @@ class _CareerTargetsWidget extends StatelessWidget {
                 'Weekly Targets Pace',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isBehind ? AppTheme.accent.withOpacity(0.15) : AppTheme.success.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  isBehind ? '⚠️ Behind pace' : '👍 On track',
-                  style: TextStyle(
-                    color: isBehind ? AppTheme.accent : AppTheme.success,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      SmartReminderService().scheduleSmartReminder();
+                      Get.snackbar(
+                        '🔔 Nudge Triggered',
+                        'Smart reminder check run successfully!',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: AppTheme.cardColor(context),
+                        colorText: AppTheme.textPrimary(context),
+                      );
+                    },
+                    icon: const Icon(Icons.notifications_active_outlined, size: 14),
+                    label: const Text('Get Nudge', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      side: BorderSide(color: AppTheme.primary.withOpacity(0.4)),
+                      foregroundColor: AppTheme.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isBehind ? AppTheme.accent.withOpacity(0.15) : AppTheme.success.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      isBehind ? '⚠️ Behind pace' : '👍 On track',
+                      style: TextStyle(
+                        color: isBehind ? AppTheme.accent : AppTheme.success,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
