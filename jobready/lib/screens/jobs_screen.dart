@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
 import '../widgets/saas_card.dart';
 import '../widgets/saas_button.dart';
+import 'job_match_screen.dart';
 
 class JobsScreen extends StatelessWidget {
   const JobsScreen({super.key});
@@ -42,86 +43,163 @@ class JobsScreen extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        if (ctrl.jobs.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SaasCard(
-                padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.work_outline, color: AppTheme.primary, size: 64),
-                    ),
-                    const SizedBox(height: 24),
-                    Text('No applications yet bro',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    Text('Tap + to add your first one',
-                        style: Theme.of(context).textTheme.bodyMedium),
-                    const SizedBox(height: 32),
-                    SaasButton(
-                      text: 'Add application',
-                      icon: Icons.add,
-                      onPressed: () => _showAddJobSheet(context, ctrl),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-
+        final hasJobs = ctrl.jobs.isNotEmpty;
         return ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            // Stats row
-            Row(
-              children: [
-                _StatPill(label: 'Total', value: '${ctrl.jobs.length}', color: AppTheme.primary),
-                const SizedBox(width: 12),
-                _StatPill(label: 'Active', value: '${ctrl.activeApplications}', color: AppTheme.secondary),
-                const SizedBox(width: 12),
-                _StatPill(
-                  label: 'Offers',
-                  value: '${ctrl.jobs.where((j) => j.status == 'offer').length}',
-                  color: AppTheme.success,
+            _buildMatchBanner(context),
+            const SizedBox(height: 20),
+            if (!hasJobs)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: SaasCard(
+                  padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.work_outline, color: AppTheme.primary, size: 64),
+                      ),
+                      const SizedBox(height: 24),
+                      Text('No applications yet bro',
+                          style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: 8),
+                      Text('Tap + to add your first one',
+                          style: Theme.of(context).textTheme.bodyMedium),
+                      const SizedBox(height: 32),
+                      SaasButton(
+                        text: 'Add application',
+                        icon: Icons.add,
+                        onPressed: () => _showAddJobSheet(context, ctrl),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 32),
-
-            // Group by status
-            ..._statuses.map((status) {
-              final group = ctrl.jobs.where((j) => j.status == status).toList();
-              if (group.isEmpty) return const SizedBox.shrink();
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              )
+            else ...[
+              // Stats row
+              Row(
                 children: [
-                  SectionHeader(title: _statusLabels[status]!),
-                  const SizedBox(height: 16),
-                  ...group.map((job) => _JobCard(
-                        job: job,
-                        ctrl: ctrl,
-                        statusColors: _statusColors,
-                        statusLabels: _statusLabels,
-                        statuses: _statuses,
-                      )),
-                  const SizedBox(height: 24),
+                  _StatPill(label: 'Total', value: '${ctrl.jobs.length}', color: AppTheme.primary),
+                  const SizedBox(width: 12),
+                  _StatPill(label: 'Active', value: '${ctrl.activeApplications}', color: AppTheme.secondary),
+                  const SizedBox(width: 12),
+                  _StatPill(
+                    label: 'Offers',
+                    value: '${ctrl.jobs.where((j) => j.status == 'offer').length}',
+                    color: AppTheme.success,
+                  ),
                 ],
-              );
-            }),
-            const SizedBox(height: 100),
+              ),
+              const SizedBox(height: 32),
+
+              // Group by status
+              ..._statuses.map((status) {
+                final group = ctrl.jobs.where((j) => j.status == status).toList();
+                if (group.isEmpty) return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SectionHeader(title: _statusLabels[status]!),
+                    const SizedBox(height: 16),
+                    ...group.map((job) => _JobCard(
+                          job: job,
+                          ctrl: ctrl,
+                          statusColors: _statusColors,
+                          statusLabels: _statusLabels,
+                          statuses: _statuses,
+                        )),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              }),
+              const SizedBox(height: 100),
+            ]
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildMatchBanner(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppTheme.primary, Color(0xFF4F46E5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Get.to(() => const JobMatchScreen()),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.track_changes_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Match Resume to a Job',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'See how well you fit any role',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.85),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

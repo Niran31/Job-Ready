@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'models/habit_model.dart';
 import 'models/sync_queue_model.dart';
 import 'models/resume_result_model.dart';
+import 'models/job_match_result_model.dart';
 import 'controllers/habit_controller.dart';
 import 'controllers/notification_controller.dart';
 import 'screens/dashboard_screen.dart';
@@ -60,12 +61,14 @@ void main() async {
   Hive.registerAdapter(WeeklyReviewModelAdapter());
   Hive.registerAdapter(SyncQueueModelAdapter());
   Hive.registerAdapter(ResumeResultModelAdapter());
+  Hive.registerAdapter(JobMatchResultModelAdapter());
   await Hive.openBox<HabitModel>('habits');
   await Hive.openBox<JobModel>('jobs');
   await Hive.openBox<SkillLogModel>('skills');
   await Hive.openBox<WeeklyReviewModel>('weekly_reviews');
   await Hive.openBox<SyncQueueModel>('sync_queue');
   await Hive.openBox<ResumeResultModel>('resume_results');
+  await Hive.openBox<JobMatchResultModel>('job_match_results');
   await Hive.openBox('user_profile');
 
   // Init GetX controller globally

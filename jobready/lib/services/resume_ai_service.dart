@@ -13,9 +13,10 @@ class ResumeAiService {
     }
 
     final model = GenerativeModel(
-      model: 'gemini-1.5-flash',
-      apiKey: 'YOUR_API_KEY',
+      model: 'gemini-2.5-flash',
+      apiKey: _geminiApiKey,
     );
+
 
     final prompt = '''
 You are a professional resume reviewer and ATS expert. Analyze the resume text
