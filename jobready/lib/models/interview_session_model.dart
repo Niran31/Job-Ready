@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'interview_session_model.g.dart';
 
-@HiveType(typeId: 6)
+@HiveType(typeId: 7)
 class InterviewSessionModel extends HiveObject {
   @HiveField(0)
   final String id;

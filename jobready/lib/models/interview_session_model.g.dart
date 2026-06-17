@@ -8,7 +8,7 @@ part of 'interview_session_model.dart';
 
 class InterviewSessionModelAdapter extends TypeAdapter<InterviewSessionModel> {
   @override
-  final int typeId = 6;
+  final int typeId = 7;
 
   @override
   InterviewSessionModel read(BinaryReader reader) {
